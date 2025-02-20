@@ -140,7 +140,7 @@ const Auth = () => {
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full bg-opacity-80 hover:bg-opacity-100"
             disabled={isLoading}
           >
             {isLoading ? "Creating account..." : "Create account"}
