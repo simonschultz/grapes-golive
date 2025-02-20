@@ -27,6 +27,7 @@ import GroupEventCreate from "./pages/groups/GroupEventCreate";
 import GroupEventOverview from "./pages/groups/GroupEventOverview";
 import Index from "./pages/Index";
 import AuthCallback from "./pages/AuthCallback";
+import Logout from "./pages/Logout";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
@@ -78,6 +79,7 @@ const App = () => {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/logout" element={<Logout />} />
         <Route path="/email-confirmation" element={<EmailConfirmation />} />
         <Route path="/magic-link" element={<MagicLink />} />
 
