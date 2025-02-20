@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { GroupHeader } from "@/components/group/GroupHeader";
@@ -25,6 +26,7 @@ const Group = () => {
   const [isMember, setIsMember] = useState<boolean | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [hasRequestedAccess, setHasRequestedAccess] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuthAndGroup = async () => {
@@ -42,6 +44,14 @@ const Group = () => {
 
         if (groupError) throw groupError;
         setGroup(groupData);
+
+        // Generate full image URL if group has an image
+        if (groupData.image_url) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('group-images')
+            .getPublicUrl(groupData.image_url);
+          setImageUrl(publicUrl);
+        }
 
         // If user is authenticated, check membership and request status
         if (user) {
@@ -149,30 +159,42 @@ const Group = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <GroupHeader 
-        title={group.title}
-        imageUrl={group.image_url}
-      />
-      <main className="max-w-3xl mx-auto p-4">
-        <div className="bg-white rounded-lg shadow">
-          <GroupInfo 
-            title={group.title}
-            description={group.description}
-            isPrivate={group.is_private}
-          />
-          <div className="p-4 border-t">
-            <Button
-              className="w-full"
-              onClick={handleGroupAction}
-              disabled={hasRequestedAccess}
-            >
-              {getButtonText()}
-            </Button>
+    <>
+      <Helmet>
+        {imageUrl && (
+          <>
+            <meta property="og:image" content={imageUrl} />
+            <meta property="twitter:image" content={imageUrl} />
+            <meta property="og:title" content={group.title} />
+            <meta property="og:description" content={group.description || `Join ${group.title} on Grapes`} />
+          </>
+        )}
+      </Helmet>
+      <div className="min-h-screen bg-gray-50">
+        <GroupHeader 
+          title={group.title}
+          imageUrl={group.image_url}
+        />
+        <main className="max-w-3xl mx-auto p-4">
+          <div className="bg-white rounded-lg shadow">
+            <GroupInfo 
+              title={group.title}
+              description={group.description}
+              isPrivate={group.is_private}
+            />
+            <div className="p-4 border-t">
+              <Button
+                className="w-full"
+                onClick={handleGroupAction}
+                disabled={hasRequestedAccess}
+              >
+                {getButtonText()}
+              </Button>
+            </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 };
 
