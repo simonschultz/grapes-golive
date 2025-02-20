@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, Users, Calendar, BellRing, Plus, User, Settings } from "lucide-react";
@@ -142,7 +143,7 @@ const Groups = () => {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <div className="flex-1 pb-16 relative">
         <header className="flex justify-between items-center p-4 bg-white border-b">
-          <h1 className="text-xl font-semibold">Groups</h1>
+          <h1 className="text-xl font-semibold">My groups</h1>
           <Button
             variant="ghost"
             size="icon"
