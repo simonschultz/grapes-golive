@@ -17,9 +17,19 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        navigate('/front');
+      }
+    };
+    checkUser();
+
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
-        navigate('/welcome');
+      if (session?.user) {
+        navigate('/front');
       }
     });
 
@@ -41,25 +51,48 @@ const Auth = () => {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             terms_accepted: termsAccepted,
           },
+          emailRedirectTo: window.location.origin + '/auth/callback'
         },
       });
 
-      if (error) throw error;
-      
-      // Navigate to email confirmation page instead of just showing a toast
-      navigate('/email-confirmation');
-      
-      // Clear the form
-      setEmail("");
-      setPassword("");
-      setTermsAccepted(false);
+      if (error) {
+        if (error.message.includes('rate limit')) {
+          toast({
+            title: "Too Many Attempts",
+            description: "Please wait a few minutes before trying again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
+      if (data.user) {
+        // Navigate to email confirmation page
+        navigate('/email-confirmation');
+        
+        // Clear the form
+        setEmail("");
+        setPassword("");
+        setTermsAccepted(false);
+        
+        toast({
+          title: "Success",
+          description: "Please check your email for confirmation link.",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error",
