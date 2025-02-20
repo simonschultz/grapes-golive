@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +26,7 @@ import GroupEdit from "./pages/groups/GroupEdit";
 import GroupEventCreate from "./pages/groups/GroupEventCreate";
 import GroupEventOverview from "./pages/groups/GroupEventOverview";
 import Index from "./pages/Index";
+import AuthCallback from "./pages/AuthCallback";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
@@ -75,6 +77,7 @@ const App = () => {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/email-confirmation" element={<EmailConfirmation />} />
         <Route path="/magic-link" element={<MagicLink />} />
 
