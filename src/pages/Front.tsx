@@ -142,7 +142,7 @@ const Front = () => {
         // Get top public groups if user has no groups
         if (!groupCount || groupCount === 0) {
           const { data: topGroupsData } = await supabase.rpc('get_top_public_groups', {
-            limit_count: 3
+            limit_count: 6
           });
           if (topGroupsData) {
             setTopGroups(topGroupsData);
@@ -197,7 +197,7 @@ const Front = () => {
                 <img 
                   src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
                   alt="Grapes Logo" 
-                  className="w-48 h-48"
+                  className="w-32 h-32"
                 />
               </div>
               <p className="text-gray-600">
@@ -223,7 +223,7 @@ const Front = () => {
             {!hasGroups && topGroups.length > 0 && (
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-center text-gray-900">Some inspiration</h3>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {topGroups.map((group) => (
                     <div 
                       key={group.id} 
@@ -342,3 +342,4 @@ const Front = () => {
 };
 
 export default Front;
+
