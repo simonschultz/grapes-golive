@@ -193,7 +193,13 @@ const Front = () => {
         <main className="flex-1 p-4">
           <div className="max-w-3xl mx-auto space-y-6">
             <div className="text-center space-y-4 mb-8">
-              <h2 className="text-2xl font-bold">Hi!</h2>
+              <div className="flex justify-center mb-6">
+                <img 
+                  src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
+                  alt="Grapes Logo" 
+                  className="w-48 h-48"
+                />
+              </div>
               <p className="text-gray-600">
                 Create and join groups for friends, family and like-minded people.
               </p>
