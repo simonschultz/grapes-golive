@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, Users, Calendar, BellRing, Settings, MessageSquare, Calendar as CalendarIcon } from "lucide-react";
@@ -116,7 +117,14 @@ const Activity = () => {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <div className="flex-1 pb-16">
         <header className="flex justify-between items-center p-4 border-b bg-white">
-          <h1 className="text-xl font-semibold">Activity</h1>
+          <div className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
+              alt="Grapes Logo" 
+              className="w-8 h-8"
+            />
+            <h1 className="text-xl font-semibold">Activity</h1>
+          </div>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -198,3 +206,4 @@ const Activity = () => {
 };
 
 export default Activity;
+

@@ -143,7 +143,14 @@ const Groups = () => {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <div className="flex-1 pb-16 relative">
         <header className="flex justify-between items-center p-4 bg-white border-b">
-          <h1 className="text-xl font-semibold">My groups</h1>
+          <div className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
+              alt="Grapes Logo" 
+              className="w-8 h-8"
+            />
+            <h1 className="text-xl font-semibold">My groups</h1>
+          </div>
           <Button
             variant="ghost"
             size="icon"
@@ -197,3 +204,4 @@ const Groups = () => {
 };
 
 export default Groups;
+

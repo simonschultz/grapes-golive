@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Home, Users, Calendar as CalendarIcon, BellRing, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -91,7 +92,14 @@ const CalendarPage = () => {
     <div className="flex flex-col min-h-screen bg-white">
       <div className="flex-1 pb-16">
         <header className="flex justify-between items-center p-4 border-b">
-          <h1 className="text-xl font-semibold">Calendar</h1>
+          <div className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
+              alt="Grapes Logo" 
+              className="w-8 h-8"
+            />
+            <h1 className="text-xl font-semibold">Calendar</h1>
+          </div>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -185,3 +193,4 @@ const CalendarPage = () => {
 };
 
 export default CalendarPage;
+
