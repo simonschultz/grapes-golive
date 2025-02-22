@@ -41,6 +41,13 @@ const About = () => {
           <p className="mt-8">
             Founded with the vision of making group organization simple and accessible, we continue to develop features that help communities thrive.
           </p>
+
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <h2 className="text-xl font-semibold mb-4">About the Creator</h2>
+            <p>
+              Grapes is the brainchild of <a href="https://simonschultz.dk" className="text-blue-600 hover:text-blue-800 underline">Simon Schultz</a>. I have built the platform to shape a proper alternative to what else is out there. If you have any questions or comments, please write me on <span className="text-blue-600">hi@grapes.group</span>.
+            </p>
+          </div>
         </div>
       </div>
     </div>
