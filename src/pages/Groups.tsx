@@ -1,6 +1,7 @@
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Settings, Plus, User } from "lucide-react";
+import { Settings, Plus, User, UsersRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -72,7 +73,7 @@ const Groups = () => {
 
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center flex-1 p-4 space-y-4">
-      <Users className="w-16 h-16 text-gray-400" />
+      <UsersRound className="w-16 h-16 text-gray-400" />
       <h2 className="text-xl font-semibold text-gray-900">You have not joined any groups yet</h2>
       <p className="text-center text-gray-600">
         Create, join or ask for an invite
@@ -112,7 +113,7 @@ const Groups = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <Users className="w-8 h-8" />
+                <UsersRound className="w-8 h-8" />
               )}
             </div>
             <div className="flex-1">
@@ -185,3 +186,4 @@ const Groups = () => {
 };
 
 export default Groups;
+
