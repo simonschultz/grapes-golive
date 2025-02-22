@@ -1,10 +1,10 @@
-
 import { Button } from "@/components/ui/button";
-import { Home, Users, Calendar as CalendarIcon, BellRing, Settings } from "lucide-react";
+import { Settings, CalendarIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { NavigationFooter } from "@/components/navigation/NavigationFooter";
 
 interface Event {
   id: string;
@@ -168,29 +168,9 @@ const CalendarPage = () => {
         </main>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 border-t bg-white z-30">
-        <div className="flex justify-around items-center h-16">
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/front')}>
-            <Home className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Home</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/groups')}>
-            <Users className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Groups</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/calendar')}>
-            <CalendarIcon className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Calendar</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/activity')}>
-            <BellRing className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Activity</span>
-          </Button>
-        </div>
-      </nav>
+      <NavigationFooter />
     </div>
   );
 };
 
 export default CalendarPage;
-

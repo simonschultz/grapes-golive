@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, Users, Calendar, BellRing, Settings, MessageSquare, Calendar as CalendarIcon } from "lucide-react";
@@ -57,6 +56,7 @@ const Activity = () => {
         
         setNotifications(typedData);
 
+        // Mark all as read
         const { error: updateError } = await supabase
           .from('notifications')
           .update({ read: true })
@@ -206,4 +206,3 @@ const Activity = () => {
 };
 
 export default Activity;
-
