@@ -25,7 +25,7 @@ export const useUnreadNotifications = () => {
 
     checkUnreadNotifications();
 
-    // Subscribe to new notifications
+    // Subscribe to all changes in notifications table (INSERT, UPDATE, DELETE)
     const channel = supabase
       .channel('schema-db-changes')
       .on(
@@ -33,9 +33,11 @@ export const useUnreadNotifications = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'notifications'
+          table: 'notifications',
+          filter: `user_id=eq.${supabase.auth.getUser().then(({ data }) => data.user?.id)}`
         },
         () => {
+          // Recheck unread count whenever there's any change to notifications
           checkUnreadNotifications();
         }
       )
@@ -48,4 +50,3 @@ export const useUnreadNotifications = () => {
 
   return hasUnread;
 };
-
