@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Welcome = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [acceptEmail, setAcceptEmail] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -95,6 +97,7 @@ const Welcome = () => {
           first_name: firstName,
           last_name: lastName,
           avatar_url: avatarUrl,
+          accept_email: acceptEmail,
         })
         .eq('id', user.id);
 
@@ -174,6 +177,20 @@ const Welcome = () => {
               required
               placeholder="Enter your last name"
             />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="acceptEmail"
+              checked={acceptEmail}
+              onCheckedChange={(checked) => setAcceptEmail(checked as boolean)}
+            />
+            <Label
+              htmlFor="acceptEmail"
+              className="text-sm text-gray-600"
+            >
+              Send me occasional updates on my group activities
+            </Label>
           </div>
 
           <Button

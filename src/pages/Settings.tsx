@@ -8,6 +8,7 @@ import { ArrowLeft, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +27,7 @@ const Settings = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [acceptEmail, setAcceptEmail] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -38,7 +40,7 @@ const Settings = () => {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('first_name, last_name, avatar_url')
+        .select('first_name, last_name, avatar_url, accept_email')
         .eq('id', user.id)
         .single();
 
@@ -46,6 +48,7 @@ const Settings = () => {
         setFirstName(profile.first_name || "");
         setLastName(profile.last_name || "");
         setAvatarUrl(profile.avatar_url);
+        setAcceptEmail(profile.accept_email || false);
       }
     };
 
@@ -102,6 +105,7 @@ const Settings = () => {
           first_name: firstName,
           last_name: lastName,
           avatar_url: avatarUrl,
+          accept_email: acceptEmail,
         })
         .eq('id', user.id);
 
@@ -227,6 +231,20 @@ const Settings = () => {
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Enter your last name"
               />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="acceptEmail"
+                checked={acceptEmail}
+                onCheckedChange={(checked) => setAcceptEmail(checked as boolean)}
+              />
+              <Label
+                htmlFor="acceptEmail"
+                className="text-sm text-gray-600"
+              >
+                Send me occasional updates on my group activities
+              </Label>
             </div>
 
             <Button
