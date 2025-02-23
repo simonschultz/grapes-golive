@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          value: Json
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       group_event_attendance: {
         Row: {
           created_at: string | null
@@ -324,6 +348,30 @@ export type Database = {
           last_name?: string | null
           terms_accepted?: boolean | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_last_visits: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_visit: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_visit?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_visit?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
