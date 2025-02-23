@@ -1,10 +1,11 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Users, Calendar, BellRing, Plus, User, Settings } from "lucide-react";
+import { Settings, Plus, User, UsersRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { NavigationFooter } from "@/components/navigation/NavigationFooter";
 
 interface Group {
   id: string;
@@ -72,7 +73,7 @@ const Groups = () => {
 
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center flex-1 p-4 space-y-4">
-      <Users className="w-16 h-16 text-gray-400" />
+      <UsersRound className="w-16 h-16 text-gray-400" />
       <h2 className="text-xl font-semibold text-gray-900">You have not joined any groups yet</h2>
       <p className="text-center text-gray-600">
         Create, join or ask for an invite
@@ -112,7 +113,7 @@ const Groups = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <Users className="w-8 h-8" />
+                <UsersRound className="w-8 h-8" />
               )}
             </div>
             <div className="flex-1">
@@ -179,26 +180,7 @@ const Groups = () => {
         </Button>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 border-t bg-white z-30">
-        <div className="flex justify-around items-center h-16">
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/front')}>
-            <Home className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Home</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/groups')}>
-            <Users className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Groups</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/calendar')}>
-            <Calendar className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Calendar</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/activity')}>
-            <BellRing className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Activity</span>
-          </Button>
-        </div>
-      </nav>
+      <NavigationFooter />
     </div>
   );
 };
