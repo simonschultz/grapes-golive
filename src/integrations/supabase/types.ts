@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          value: Json
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      admin_users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
       group_event_attendance: {
         Row: {
           created_at: string | null
@@ -293,6 +335,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accept_email: boolean | null
           avatar_url: string | null
           created_at: string | null
           email: string
@@ -303,6 +346,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          accept_email?: boolean | null
           avatar_url?: string | null
           created_at?: string | null
           email: string
@@ -313,6 +357,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          accept_email?: boolean | null
           avatar_url?: string | null
           created_at?: string | null
           email?: string
@@ -321,6 +366,30 @@ export type Database = {
           last_name?: string | null
           terms_accepted?: boolean | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_last_visits: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_visit: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_visit?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_visit?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

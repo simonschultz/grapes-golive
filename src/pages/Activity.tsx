@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, Users, Calendar, BellRing, Settings, MessageSquare, Calendar as CalendarIcon } from "lucide-react";
@@ -56,7 +57,6 @@ const Activity = () => {
         
         setNotifications(typedData);
 
-        // Mark all as read
         const { error: updateError } = await supabase
           .from('notifications')
           .update({ read: true })
@@ -125,14 +125,16 @@ const Activity = () => {
             />
             <h1 className="text-xl font-semibold">Activity</h1>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="text-[#000080]"
-            onClick={() => navigate('/settings')}
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-[#000080]"
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+          </div>
         </header>
 
         <main className="max-w-3xl mx-auto px-4 py-6">
