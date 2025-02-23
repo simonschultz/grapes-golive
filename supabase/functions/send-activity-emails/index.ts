@@ -97,7 +97,7 @@ serve(async () => {
 
         // Send email
         await resend.emails.send({
-          from: 'Grapes <onboarding@resend.dev>',
+          from: 'Grapes <hi@grapes.group>',
           to: [user.email],
           subject: 'Things happening in your groups',
           html,
@@ -123,4 +123,3 @@ serve(async () => {
     })
   }
 })
-
