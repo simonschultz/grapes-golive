@@ -3,32 +3,51 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const Admin = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isSendingEmails, setIsSendingEmails] = useState(false);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.email) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user?.email) {
+          setIsAdmin(false);
+          navigate('/');
+          return;
+        }
+
+        const { data: adminUser, error } = await supabase
+          .from('admin_users')
+          .select('email')
+          .eq('email', user.email)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error checking admin status:', error);
+          setIsAdmin(false);
+          return;
+        }
+
+        setIsAdmin(!!adminUser);
+        
+        // If not admin, redirect to front page
+        if (!adminUser) {
+          navigate('/front');
+        }
+      } catch (error) {
+        console.error('Error in admin check:', error);
         setIsAdmin(false);
-        return;
       }
-
-      const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select()
-        .eq('email', user.email)
-        .single();
-
-      setIsAdmin(!!adminUser);
     };
 
     checkAdminAccess();
-  }, []);
+  }, [navigate]);
 
   const handleTestEmailDigest = async () => {
     try {
@@ -52,12 +71,14 @@ const Admin = () => {
     }
   };
 
+  // Show loading state while checking admin status
   if (isAdmin === null) {
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
   }
 
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
+  // If explicitly not admin, redirect to front page
+  if (isAdmin === false) {
+    return <Navigate to="/front" replace />;
   }
 
   return (
