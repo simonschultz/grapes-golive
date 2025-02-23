@@ -25,6 +25,7 @@ const Activity = () => {
   const { toast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSendingEmails, setIsSendingEmails] = useState(false);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -56,7 +57,6 @@ const Activity = () => {
         
         setNotifications(typedData);
 
-        // Mark all as read
         const { error: updateError } = await supabase
           .from('notifications')
           .update({ read: true })
@@ -113,6 +113,28 @@ const Activity = () => {
     }
   };
 
+  const handleTestEmailDigest = async () => {
+    try {
+      setIsSendingEmails(true);
+      const { error } = await supabase.functions.invoke('send-activity-emails');
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Email digest job has been triggered",
+      });
+    } catch (error) {
+      console.error('Error triggering email digest:', error);
+      toast({
+        title: "Error",
+        description: "Failed to trigger email digest",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingEmails(false);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <div className="flex-1 pb-16">
@@ -125,14 +147,24 @@ const Activity = () => {
             />
             <h1 className="text-xl font-semibold">Activity</h1>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="text-[#000080]"
-            onClick={() => navigate('/settings')}
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={handleTestEmailDigest}
+              disabled={isSendingEmails}
+            >
+              {isSendingEmails ? "Sending..." : "Test Email Digest"}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-[#000080]"
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+          </div>
         </header>
 
         <main className="max-w-3xl mx-auto px-4 py-6">
