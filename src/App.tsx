@@ -9,6 +9,7 @@ import Settings from "./pages/Settings";
 import Groups from "./pages/Groups";
 import Calendar from "./pages/Calendar";
 import Activity from "./pages/Activity";
+import Admin from "./pages/Admin";
 import About from "./pages/About";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -89,6 +90,7 @@ const App = () => {
         <Route path="/groups" element={<ProtectedRoute><Groups /></ProtectedRoute>} />
         <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
         <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
         <Route path="/groups/create" element={<ProtectedRoute><Create /></ProtectedRoute>} />
         <Route path="/groups/join" element={<ProtectedRoute><Join /></ProtectedRoute>} />
         
