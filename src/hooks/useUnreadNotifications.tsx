@@ -6,45 +6,57 @@ export const useUnreadNotifications = () => {
   const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {
-    const checkUnreadNotifications = async () => {
+    let channel: ReturnType<typeof supabase.channel>;
+
+    const setupNotifications = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { count } = await supabase
-          .from('notifications')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .eq('read', false);
+        const checkUnreadNotifications = async () => {
+          try {
+            const { count } = await supabase
+              .from('notifications')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .eq('read', false);
 
-        setHasUnread(count ? count > 0 : false);
+            setHasUnread(count ? count > 0 : false);
+          } catch (error) {
+            console.error('Error checking unread notifications:', error);
+          }
+        };
+
+        await checkUnreadNotifications();
+
+        // Subscribe to all changes in notifications table for the current user
+        channel = supabase
+          .channel('schema-db-changes')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'notifications',
+              filter: `user_id=eq.${user.id}`
+            },
+            () => {
+              checkUnreadNotifications();
+            }
+          )
+          .subscribe();
+
       } catch (error) {
-        console.error('Error checking unread notifications:', error);
+        console.error('Error setting up notifications:', error);
       }
     };
 
-    checkUnreadNotifications();
-
-    // Subscribe to all changes in notifications table (INSERT, UPDATE, DELETE)
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${supabase.auth.getUser().then(({ data }) => data.user?.id)}`
-        },
-        () => {
-          // Recheck unread count whenever there's any change to notifications
-          checkUnreadNotifications();
-        }
-      )
-      .subscribe();
+    setupNotifications();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, []);
 
