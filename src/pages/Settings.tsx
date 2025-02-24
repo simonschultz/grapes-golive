@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -233,18 +232,20 @@ const Settings = () => {
               />
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="acceptEmail"
-                checked={acceptEmail}
-                onCheckedChange={(checked) => setAcceptEmail(checked as boolean)}
-              />
-              <Label
-                htmlFor="acceptEmail"
-                className="text-sm text-gray-600"
-              >
-                Send me occasional updates on my group activities
-              </Label>
+            <div className="bg-sky-100 p-4 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="acceptEmail"
+                  checked={acceptEmail}
+                  onCheckedChange={(checked) => setAcceptEmail(checked as boolean)}
+                />
+                <Label
+                  htmlFor="acceptEmail"
+                  className="text-sm text-gray-700"
+                >
+                  Yes, please send occasional updates on my groups' activities.
+                </Label>
+              </div>
             </div>
 
             <Button
