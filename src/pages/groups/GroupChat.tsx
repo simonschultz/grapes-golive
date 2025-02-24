@@ -1,6 +1,7 @@
+
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Home, MessageSquare, Calendar, Users, Bell, Settings, Send, ImagePlus, MoreVertical } from "lucide-react";
+import { Home, MessageSquare, Calendar, Users, Bell, Settings, Send, ImagePlus, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -359,16 +360,36 @@ const GroupChat = () => {
                 message.user_id === currentUser ? 'flex-row-reverse' : 'flex-row'
               }`}
             >
-              <Avatar className="w-8 h-8 flex-shrink-0">
-                <AvatarImage 
-                  src={message.user?.avatar_url || undefined}
-                  alt={`${message.user?.first_name || 'User'}'s avatar`}
-                />
-                <AvatarFallback>
-                  {message.user?.first_name?.[0]?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 flex flex-col items-end">
+              <div className="flex flex-col items-center gap-1">
+                <Avatar className="w-8 h-8 flex-shrink-0">
+                  <AvatarImage 
+                    src={message.user?.avatar_url || undefined}
+                    alt={`${message.user?.first_name || 'User'}'s avatar`}
+                  />
+                  <AvatarFallback>
+                    {message.user?.first_name?.[0]?.toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                {message.user_id === currentUser && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-32 p-2">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => setMessageToDelete(message.id)}
+                      >
+                        Delete
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+              <div className="flex-1">
                 <div
                   className={`rounded-lg p-3 max-w-[80%] break-words ${
                     message.user_id === currentUser
@@ -390,26 +411,6 @@ const GroupChat = () => {
                     <p className="whitespace-pre-wrap">{message.content}</p>
                   )}
                 </div>
-                {message.user_id === currentUser && (
-                  <div className="mt-1">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-6 w-6">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-32 p-2">
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => setMessageToDelete(message.id)}
-                        >
-                          Delete
-                        </Button>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                )}
               </div>
             </div>
           ))}
