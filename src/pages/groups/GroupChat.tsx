@@ -159,6 +159,7 @@ const GroupChat = () => {
               filter: `group_id=eq.${groupData.id}`
             },
             (payload) => {
+              console.log('Message deleted:', payload.old.id);
               setMessages(prev => prev.filter(msg => msg.id !== payload.old.id));
             }
           )
@@ -198,6 +199,7 @@ const GroupChat = () => {
         description: "Message deleted successfully",
       });
     } catch (error: any) {
+      console.error('Error deleting message:', error);
       toast({
         title: "Error",
         description: error.message,
