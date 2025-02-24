@@ -1,10 +1,20 @@
-
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Home, MessageSquare, Calendar, Users, Bell, Settings, Send, ImagePlus } from "lucide-react";
+import { Home, MessageSquare, Calendar, Users, Bell, Settings, Send, ImagePlus, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -41,6 +51,7 @@ const GroupChat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -88,7 +99,6 @@ const GroupChat = () => {
 
         setGroup(groupData);
 
-        // Fetch existing messages
         const { data: messagesData, error: messagesError } = await supabase
           .from('messages')
           .select(`
@@ -105,7 +115,6 @@ const GroupChat = () => {
         if (messagesError) throw messagesError;
         setMessages(messagesData || []);
 
-        // Subscribe to new messages
         const channel = supabase
           .channel('group-messages')
           .on(
@@ -140,6 +149,18 @@ const GroupChat = () => {
               setMessages(prev => [...prev, newMessage]);
             }
           )
+          .on(
+            'postgres_changes',
+            {
+              event: 'DELETE',
+              schema: 'public',
+              table: 'messages',
+              filter: `group_id=eq.${groupData.id}`
+            },
+            (payload) => {
+              setMessages(prev => prev.filter(msg => msg.id !== payload.old.id));
+            }
+          )
           .subscribe();
 
         return () => {
@@ -160,6 +181,31 @@ const GroupChat = () => {
 
     checkAccess();
   }, [slug, navigate, toast]);
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('user_id', currentUser);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Message deleted successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setMessageToDelete(null);
+    }
+  };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -322,25 +368,47 @@ const GroupChat = () => {
                   {message.user?.first_name?.[0]?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div
-                className={`rounded-lg p-3 max-w-[80%] break-words ${
-                  message.user_id === currentUser
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-900'
-                }`}
-              >
-                <p className="text-sm mb-1">
-                  {message.user?.first_name} {message.user?.last_name}
-                </p>
-                {message.image_url && (
-                  <img 
-                    src={supabase.storage.from('chat-images').getPublicUrl(message.image_url).data.publicUrl}
-                    alt="Chat image"
-                    className="max-w-full rounded-lg mb-2"
-                  />
-                )}
-                {message.content && (
-                  <p className="whitespace-pre-wrap">{message.content}</p>
+              <div className="flex-1 flex flex-col items-end">
+                <div
+                  className={`rounded-lg p-3 max-w-[80%] break-words ${
+                    message.user_id === currentUser
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  <p className="text-sm mb-1">
+                    {message.user?.first_name} {message.user?.last_name}
+                  </p>
+                  {message.image_url && (
+                    <img 
+                      src={supabase.storage.from('chat-images').getPublicUrl(message.image_url).data.publicUrl}
+                      alt="Chat image"
+                      className="max-w-full rounded-lg mb-2"
+                    />
+                  )}
+                  {message.content && (
+                    <p className="whitespace-pre-wrap">{message.content}</p>
+                  )}
+                </div>
+                {message.user_id === currentUser && (
+                  <div className="mt-1">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-32 p-2">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => setMessageToDelete(message.id)}
+                        >
+                          Delete
+                        </Button>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 )}
               </div>
             </div>
@@ -348,6 +416,26 @@ const GroupChat = () => {
           <div ref={messagesEndRef} />
         </div>
       </main>
+
+      <AlertDialog open={!!messageToDelete} onOpenChange={() => setMessageToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Message</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this message? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => messageToDelete && handleDeleteMessage(messageToDelete)}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="fixed bottom-16 left-0 right-0 bg-white border-t p-4">
         <div className="max-w-3xl mx-auto">
