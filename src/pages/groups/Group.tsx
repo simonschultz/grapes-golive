@@ -161,14 +161,19 @@ const Group = () => {
   return (
     <>
       <Helmet>
-        {imageUrl && (
+        {imageUrl ? (
           <>
             <meta property="og:image" content={imageUrl} />
             <meta property="twitter:image" content={imageUrl} />
-            <meta property="og:title" content={group.title} />
-            <meta property="og:description" content={group.description || `Join ${group.title} on Grapes`} />
+          </>
+        ) : (
+          <>
+            <meta property="og:image" content="/lovable-uploads/8ef4e9ab-1c4a-4f16-b25f-8f01af80d23b.png" />
+            <meta property="twitter:image" content="/lovable-uploads/8ef4e9ab-1c4a-4f16-b25f-8f01af80d23b.png" />
           </>
         )}
+        <meta property="og:title" content={group.title} />
+        <meta property="og:description" content={group.description || `Join ${group.title} on Grapes`} />
       </Helmet>
       <div className="min-h-screen bg-gray-50">
         <GroupHeader 
