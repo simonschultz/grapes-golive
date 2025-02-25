@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +28,38 @@ import GroupEventOverview from "./pages/groups/GroupEventOverview";
 import Index from "./pages/Index";
 import AuthCallback from "./pages/AuthCallback";
 import Logout from "./pages/Logout";
+
+const ADMIN_EMAILS = ['simon@commis.dk', 'hi@grapes.group'];
+
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAdmin(!!user && ADMIN_EMAILS.includes(user.email ?? ''));
+      setLoading(false);
+    };
+    checkAdminAccess();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAdmin(!!session?.user && ADMIN_EMAILS.includes(session.user.email ?? ''));
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
@@ -90,7 +121,13 @@ const App = () => {
         <Route path="/groups" element={<ProtectedRoute><Groups /></ProtectedRoute>} />
         <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
         <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <AdminRoute>
+              <Admin />
+            </AdminRoute>
+          </ProtectedRoute>
+        } />
         <Route path="/groups/create" element={<ProtectedRoute><Create /></ProtectedRoute>} />
         <Route path="/groups/join" element={<ProtectedRoute><Join /></ProtectedRoute>} />
         
