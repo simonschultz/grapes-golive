@@ -28,6 +28,11 @@ const Group = () => {
   const [hasRequestedAccess, setHasRequestedAccess] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
+  const getAbsoluteUrl = (path: string) => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}${path}`;
+  };
+
   useEffect(() => {
     const checkAuthAndGroup = async () => {
       try {
@@ -151,6 +156,8 @@ const Group = () => {
 
   if (!group) return null;
 
+  const defaultImageUrl = getAbsoluteUrl('/lovable-uploads/8ef4e9ab-1c4a-4f16-b25f-8f01af80d23b.png');
+  
   const getButtonText = () => {
     if (!isAuthenticated) return 'Sign in to Join Group';
     if (group.is_private && hasRequestedAccess) return 'Waiting for approval';
@@ -168,8 +175,8 @@ const Group = () => {
           </>
         ) : (
           <>
-            <meta property="og:image" content="/lovable-uploads/8ef4e9ab-1c4a-4f16-b25f-8f01af80d23b.png" />
-            <meta property="twitter:image" content="/lovable-uploads/8ef4e9ab-1c4a-4f16-b25f-8f01af80d23b.png" />
+            <meta property="og:image" content={defaultImageUrl} />
+            <meta property="twitter:image" content={defaultImageUrl} />
           </>
         )}
         <meta property="og:title" content={group.title} />
