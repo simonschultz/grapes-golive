@@ -168,19 +168,10 @@ const Group = () => {
   return (
     <>
       <Helmet>
-        {imageUrl ? (
-          <>
-            <meta property="og:image" content={imageUrl} />
-            <meta property="twitter:image" content={imageUrl} />
-          </>
-        ) : (
-          <>
-            <meta property="og:image" content={defaultImageUrl} />
-            <meta property="twitter:image" content={defaultImageUrl} />
-          </>
-        )}
         <meta property="og:title" content={group.title} />
         <meta property="og:description" content={group.description || `Join ${group.title} on Grapes`} />
+        <meta property="og:image" content={imageUrl || defaultImageUrl} />
+        <meta property="twitter:image" content={imageUrl || defaultImageUrl} />
       </Helmet>
       <div className="min-h-screen bg-gray-50">
         <GroupHeader 
