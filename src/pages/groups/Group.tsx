@@ -28,6 +28,17 @@ const Group = () => {
   const [hasRequestedAccess, setHasRequestedAccess] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
+  const getAbsoluteUrl = (path: string) => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}${path}`;
+  };
+
+  const getFullUrl = (path?: string) => {
+    const baseUrl = window.location.origin;
+    if (!path) return baseUrl;
+    return `${baseUrl}${path}`;
+  };
+
   useEffect(() => {
     const checkAuthAndGroup = async () => {
       try {
@@ -151,6 +162,9 @@ const Group = () => {
 
   if (!group) return null;
 
+  const defaultImageUrl = getAbsoluteUrl('/lovable-uploads/8ef4e9ab-1c4a-4f16-b25f-8f01af80d23b.png');
+  const currentUrl = getFullUrl(`/groups/${slug}`);
+  
   const getButtonText = () => {
     if (!isAuthenticated) return 'Sign in to Join Group';
     if (group.is_private && hasRequestedAccess) return 'Waiting for approval';
@@ -161,14 +175,18 @@ const Group = () => {
   return (
     <>
       <Helmet>
-        {imageUrl && (
-          <>
-            <meta property="og:image" content={imageUrl} />
-            <meta property="twitter:image" content={imageUrl} />
-            <meta property="og:title" content={group.title} />
-            <meta property="og:description" content={group.description || `Join ${group.title} on Grapes`} />
-          </>
-        )}
+        <meta property="og:title" content={group.title} />
+        <meta property="og:description" content={group.description || `Join ${group.title} on Grapes`} />
+        <meta property="og:image" content={imageUrl || defaultImageUrl} />
+        <meta property="og:url" content={currentUrl} />
+        <meta property="og:type" content="website" />
+        
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta property="twitter:domain" content={window.location.hostname} />
+        <meta property="twitter:url" content={currentUrl} />
+        <meta name="twitter:title" content={group.title} />
+        <meta name="twitter:description" content={group.description || `Join ${group.title} on Grapes`} />
+        <meta name="twitter:image" content={imageUrl || defaultImageUrl} />
       </Helmet>
       <div className="min-h-screen bg-gray-50">
         <GroupHeader 
