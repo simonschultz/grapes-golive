@@ -247,6 +247,12 @@ const Front = () => {
                   className="max-w-xl mx-auto"
                 />
               </div>
+              
+              <div className="text-sm text-gray-500 mt-2">
+                <a href="mailto:hi@grapes.group" className="hover:text-[#000080] transition-colors">
+                  Need help? We are just an e-mail away.
+                </a>
+              </div>
             </div>
 
             {!hasGroups && topGroups.length > 0 && (
