@@ -100,7 +100,13 @@ const About = () => {
           <div className="mt-12 pt-8 border-t border-gray-200">
             <h2 className="text-xl font-semibold mb-4">About Simon Schultz</h2>
             <p>
-              Grapes is the brainchild of <a href="https://simonschultz.dk" className="text-blue-600 hover:text-blue-800 underline">Simon Schultz</a>. I have built the platform to shape a proper alternative to what else is out there. If you have any questions or comments, please write me on <span className="text-blue-600">hi@grapes.group</span>.
+              Grapes is the brainchild of <a href="https://simonschultz.dk" className="text-blue-600 hover:text-blue-800 underline">Simon Schultz</a>. To create an alternative to other (great) group services available in the market. 
+              We have just launched (February 21st 2025). So still building and exploring how we can make things even better. 
+              If you have any questions, suggestions or comments, please write me on <span className="text-blue-600">hi@grapes.group</span>.
+            </p>
+            <p className="mt-4">
+              <b>Simon Schultz</b><br />
+              Founder, Grapes
             </p>
           </div>
         </div>
