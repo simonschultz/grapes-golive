@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -172,6 +173,13 @@ const Settings = () => {
     }
   };
 
+  const addToHomeScreen = () => {
+    toast({
+      title: "Add to Home Screen",
+      description: "Open your browser menu and select 'Add to Home Screen' or 'Install App' to create a shortcut.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="flex justify-between items-center p-4 border-b">
@@ -247,11 +255,32 @@ const Settings = () => {
                 </Label>
               </div>
             </div>
+            
+            {/* Add to home screen section */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <Smartphone className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h3 className="font-medium text-blue-800">Add Grapes to home screen</h3>
+                  <p className="text-sm text-gray-700 mt-1">
+                    Clicking below will help add a bookmark/shortcut on your mobile phone's home screen.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-2 border-blue-300 text-blue-800 hover:bg-blue-100"
+                    onClick={addToHomeScreen}
+                  >
+                    Add to home screen
+                  </Button>
+                </div>
+              </div>
+            </div>
 
             <Button
               className="w-full"
               onClick={handleSave}
               disabled={isLoading}
+              style={{ backgroundColor: "#000080" }}
             >
               {isLoading ? "Saving..." : "Save changes"}
             </Button>
