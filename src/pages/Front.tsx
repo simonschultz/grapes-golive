@@ -38,6 +38,10 @@ interface TopGroup {
   member_count: number;
 }
 
+interface SiteSettings {
+  front_page_intro: string;
+}
+
 const Front = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -47,6 +51,9 @@ const Front = () => {
   const [notificationCount, setNotificationCount] = useState(0);
   const [topGroups, setTopGroups] = useState<TopGroup[]>([]);
   const [hasGroups, setHasGroups] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({
+    front_page_intro: "Create and join groups for friends, family and like-minded people."
+  });
 
   useEffect(() => {
     const checkProfile = async () => {
@@ -66,6 +73,16 @@ const Front = () => {
         if (!profile?.first_name || !profile?.last_name) {
           navigate('/welcome');
           return;
+        }
+
+        // Fetch site settings
+        const { data: settingsData } = await supabase
+          .from('site_settings')
+          .select('*')
+          .single();
+        
+        if (settingsData) {
+          setSiteSettings(settingsData);
         }
 
         // Get notifications
@@ -213,11 +230,11 @@ const Front = () => {
                 <img 
                   src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
                   alt="Grapes Logo" 
-                  className="w-32 h-32"
+                  className="w-24 h-24" // Reduced from w-32 h-32
                 />
               </div>
               <p className="text-gray-600">
-                Create and join groups for friends, family and like-minded people.
+                {siteSettings.front_page_intro}
               </p>
               
               {/* Replace buttons with FeatureSection */}
