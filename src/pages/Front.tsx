@@ -39,7 +39,10 @@ interface TopGroup {
 }
 
 interface SiteSettings {
+  id: string;
   front_page_intro: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const Front = () => {
@@ -52,6 +55,7 @@ const Front = () => {
   const [topGroups, setTopGroups] = useState<TopGroup[]>([]);
   const [hasGroups, setHasGroups] = useState(false);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>({
+    id: '',
     front_page_intro: "Create and join groups for friends, family and like-minded people."
   });
 
@@ -79,7 +83,7 @@ const Front = () => {
         const { data: settingsData } = await supabase
           .from('site_settings')
           .select('*')
-          .single();
+          .maybeSingle();
         
         if (settingsData) {
           setSiteSettings(settingsData);

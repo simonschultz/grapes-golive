@@ -5,13 +5,14 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 interface SiteSettings {
-  id?: string;
+  id: string;
   front_page_intro: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const Admin = () => {
@@ -19,6 +20,7 @@ const Admin = () => {
   const [isSendingEmails, setIsSendingEmails] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState<SiteSettings>({
+    id: '',
     front_page_intro: "Create and join groups for friends, family and like-minded people."
   });
 
@@ -28,10 +30,9 @@ const Admin = () => {
         const { data, error } = await supabase
           .from('site_settings')
           .select('*')
-          .single();
+          .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') {
-          // PGRST116 means no rows returned, which is fine for initial setup
+        if (error) {
           console.error('Error fetching settings:', error);
           return;
         }
@@ -75,16 +76,15 @@ const Admin = () => {
 
       const { data, error } = await supabase
         .from('site_settings')
-        .upsert({
-          id: settings.id || 'default',
-          front_page_intro: settings.front_page_intro
-        })
-        .select();
+        .update({ front_page_intro: settings.front_page_intro })
+        .eq('id', settings.id)
+        .select()
+        .single();
 
       if (error) throw error;
 
-      if (data && data[0]) {
-        setSettings(data[0]);
+      if (data) {
+        setSettings(data);
       }
 
       toast({
