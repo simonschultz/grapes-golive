@@ -162,7 +162,7 @@ const Group = () => {
 
   if (!group) return null;
 
-  const defaultImageUrl = getAbsoluteUrl('/lovable-uploads/8ef4e9ab-1c4a-4f16-b25f-8f01af80d23b.png');
+  const defaultImageUrl = getAbsoluteUrl('/lovable-uploads/987d0824-15e3-4e4a-b4e8-535baf108d42.png');
   const currentUrl = getFullUrl(`/groups/${slug}`);
   
   const getButtonText = () => {
