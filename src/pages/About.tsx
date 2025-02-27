@@ -56,7 +56,7 @@ const About = () => {
           </p>
 
           <div className="mt-12 pt-8 border-t border-gray-200">
-            <h2 className="text-xl font-semibold mb-4">About the Creator</h2>
+            <h2 className="text-xl font-semibold mb-4">About Simon Schultz</h2>
             <p>
               Grapes is the brainchild of <a href="https://simonschultz.dk" className="text-blue-600 hover:text-blue-800 underline">Simon Schultz</a>. I have built the platform to shape a proper alternative to what else is out there. If you have any questions or comments, please write me on <span className="text-blue-600">hi@grapes.group</span>.
             </p>
