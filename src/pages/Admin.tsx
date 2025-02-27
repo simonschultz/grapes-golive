@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface SiteSettings {
   id: string;
@@ -27,10 +28,11 @@ const Admin = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
+        // Use maybeSingle instead of single to avoid errors if no record is found
         const { data, error } = await supabase
           .from('site_settings')
           .select('*')
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching settings:', error);
@@ -74,31 +76,50 @@ const Admin = () => {
     try {
       setIsSaving(true);
 
-      const { data, error } = await supabase
-        .from('site_settings')
-        .update({
-          front_page_intro: settings.front_page_intro,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', settings.id)
-        .select()
-        .single();
+      // Check if we need to insert a new record or update an existing one
+      if (!settings.id) {
+        // No ID, so we need to insert a new record
+        const { data, error } = await supabase
+          .from('site_settings')
+          .insert({
+            front_page_intro: settings.front_page_intro,
+          })
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      if (data) {
-        setSettings(data as SiteSettings);
+        if (data) {
+          setSettings(data as SiteSettings);
+        }
+      } else {
+        // We have an ID, so update the existing record
+        const { data, error } = await supabase
+          .from('site_settings')
+          .update({
+            front_page_intro: settings.front_page_intro,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', settings.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setSettings(data as SiteSettings);
+        }
       }
 
       toast({
         title: "Settings saved",
         description: "Your site settings have been updated",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving settings:', error);
       toast({
         title: "Error",
-        description: "Failed to save settings",
+        description: error.message || "Failed to save settings",
         variant: "destructive",
       });
     } finally {
@@ -147,7 +168,11 @@ const Admin = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={saveSettings} disabled={isSaving}>
+                <Button 
+                  onClick={saveSettings} 
+                  disabled={isSaving}
+                  style={{ backgroundColor: "#000080" }}
+                >
                   {isSaving ? "Saving..." : "Save Changes"}
                 </Button>
               </CardFooter>
