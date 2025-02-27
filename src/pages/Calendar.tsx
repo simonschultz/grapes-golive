@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Settings, CalendarIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -88,6 +89,37 @@ const CalendarPage = () => {
     fetchEvents();
   }, [navigate]);
 
+  // Function to get a color based on the event's group name
+  const getEventColor = (groupTitle: string) => {
+    // Simple hash function to generate a consistent color for each group
+    const hash = groupTitle.split('').reduce((acc, char) => {
+      return char.charCodeAt(0) + ((acc << 5) - acc);
+    }, 0);
+    
+    // List of attractive purple and blue shades
+    const colors = [
+      'bg-[#9b87f5]', // Primary Purple
+      'bg-[#7E69AB]', // Secondary Purple
+      'bg-[#6E59A5]', // Tertiary Purple
+      'bg-[#E5DEFF]', // Soft Purple
+      'bg-[#8B5CF6]', // Vivid Purple
+      'bg-[#0EA5E9]', // Ocean Blue
+      'bg-[#33C3F0]', // Sky Blue
+      'bg-[#D946EF]', // Magenta Pink
+    ];
+    
+    // Use the hash to select a color from the array
+    const colorIndex = Math.abs(hash) % colors.length;
+    return colors[colorIndex];
+  };
+
+  // Function to get text color based on background color
+  const getTextColor = (bgColor: string) => {
+    // Darker backgrounds need white text, lighter ones need dark text
+    const lightBackgrounds = ['bg-[#E5DEFF]'];
+    return lightBackgrounds.includes(bgColor) ? 'text-gray-800' : 'text-white';
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <div className="flex-1 pb-16">
@@ -124,45 +156,60 @@ const CalendarPage = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {events.map((event) => (
-                <div
-                  key={event.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
-                  onClick={() => navigate(`/groups/${event.group.slug}/calendar/${event.id}`)}
-                >
-                  <div className="flex gap-6 items-start">
-                    <div className="min-w-[80px] text-center">
-                      <p className="text-4xl font-bold">
-                        {format(new Date(event.date), 'd')}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {format(new Date(event.date), 'MMM')}
-                      </p>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{event.title}</h3>
-                      <p className="text-sm text-blue-600 mt-1">
+            <div className="space-y-6">
+              {events.map((event) => {
+                const bgColor = getEventColor(event.group.title);
+                const textColor = getTextColor(bgColor);
+                
+                return (
+                  <div
+                    key={event.id}
+                    className="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+                    onClick={() => navigate(`/groups/${event.group.slug}/calendar/${event.id}`)}
+                  >
+                    <div className={`${bgColor} p-4`}>
+                      <h3 className={`font-bold text-xl ${textColor}`}>{event.title}</h3>
+                      <p className={`${textColor} opacity-90 text-sm font-medium mt-1`}>
                         {event.group.title}
                       </p>
-                      {event.description && (
-                        <p className="text-gray-600 mt-1">{event.description}</p>
-                      )}
-                      <p className="text-gray-600 mt-2">
-                        {format(new Date(`2000-01-01T${event.time_start}`), 'h:mm a')}
-                        {event.time_end && (
-                          <> - {format(new Date(`2000-01-01T${event.time_end}`), 'h:mm a')}</>
-                        )}
-                      </p>
-                      {event.location && (
-                        <p className="text-gray-600 mt-2">
-                          📍 {event.location}
+                    </div>
+                    
+                    <div className="flex bg-white">
+                      <div className="min-w-[100px] p-4 flex flex-col items-center justify-center border-r">
+                        <p className="text-4xl font-bold text-gray-800">
+                          {format(new Date(event.date), 'd')}
                         </p>
-                      )}
+                        <p className="text-sm text-gray-600 uppercase font-medium">
+                          {format(new Date(event.date), 'MMM')}
+                        </p>
+                      </div>
+                      
+                      <div className="p-4 flex-1">
+                        {event.description && (
+                          <p className="text-gray-700 mb-3">{event.description}</p>
+                        )}
+                        
+                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <CalendarIcon className="h-4 w-4 mr-2 inline-block" />
+                          <span>
+                            {format(new Date(`2000-01-01T${event.time_start}`), 'h:mm a')}
+                            {event.time_end && (
+                              <> - {format(new Date(`2000-01-01T${event.time_end}`), 'h:mm a')}</>
+                            )}
+                          </span>
+                        </div>
+                        
+                        {event.location && (
+                          <div className="flex items-start text-sm text-gray-600">
+                            <span className="mr-2">📍</span>
+                            <span>{event.location}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </main>
