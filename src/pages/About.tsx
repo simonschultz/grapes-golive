@@ -87,6 +87,16 @@ const About = () => {
             Founded with the vision of making group organization simple and accessible, we continue to develop features that help communities thrive.
           </p>
 
+          <h2 className="text-xl font-semibold mt-8">How we manage privacy and data</h2>
+          <p>
+            Grapes is founded as an alternative to larger platforms harvesting data and insights on individual users. 
+            We are limiting the collection of data. Only collecting data and information which is required to make the service work. 
+            We do not share any of your data with others than explicitly mentioned Data Processors - like Supabase, which is the backbone and database hosting the data. All data is stored on servers in Frankfurt.
+          </p>
+          <p className="mt-2">
+            More details can be found in our <Link to="/privacy/" className="text-blue-600 hover:text-blue-800 underline">privacy policy</Link>.
+          </p>
+
           <div className="mt-12 pt-8 border-t border-gray-200">
             <h2 className="text-xl font-semibold mb-4">About Simon Schultz</h2>
             <p>
