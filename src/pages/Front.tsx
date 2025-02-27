@@ -187,9 +187,9 @@ const Front = () => {
       case 'chat':
         return <MessageSquare className="h-5 w-5 text-blue-500" />;
       case 'event':
-        return <Calendar className="h-5 w-5 text-green-500" />;
+        return <Calendar className="h-5 w-5 text-blue-600" />;
       case 'member':
-        return <Users className="h-5 w-5 text-purple-500" />;
+        return <Users className="h-5 w-5 text-blue-700" />;
       default:
         return <BellRing className="h-5 w-5 text-gray-500" />;
     }
