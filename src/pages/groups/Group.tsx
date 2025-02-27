@@ -103,7 +103,7 @@ const Group = () => {
 
   const handleGroupAction = async () => {
     if (!isAuthenticated) {
-      navigate('/auth');
+      navigate('/'); // Changed from /auth to / (index)
       return;
     }
 
