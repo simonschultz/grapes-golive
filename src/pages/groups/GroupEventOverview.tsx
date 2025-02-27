@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, X, HelpCircle } from "lucide-react";
+import { ArrowLeft, Check, X, HelpCircle, Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -230,7 +230,10 @@ const GroupEventOverview = () => {
             {event.location && (
               <div>
                 <h2 className="text-lg font-medium mb-2">Location</h2>
-                <p className="text-gray-600">📍 {event.location}</p>
+                <div className="flex items-start text-gray-600">
+                  <MapPin className="h-5 w-5 mr-2 text-gray-500" />
+                  <span>{event.location}</span>
+                </div>
               </div>
             )}
 

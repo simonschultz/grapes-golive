@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Settings, CalendarIcon } from "lucide-react";
+import { Settings, CalendarIcon, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -96,16 +96,16 @@ const CalendarPage = () => {
       return char.charCodeAt(0) + ((acc << 5) - acc);
     }, 0);
     
-    // List of attractive purple and blue shades
+    // List of attractive blue shades instead of purple
     const colors = [
-      'bg-[#9b87f5]', // Primary Purple
-      'bg-[#7E69AB]', // Secondary Purple
-      'bg-[#6E59A5]', // Tertiary Purple
-      'bg-[#E5DEFF]', // Soft Purple
-      'bg-[#8B5CF6]', // Vivid Purple
       'bg-[#0EA5E9]', // Ocean Blue
+      'bg-[#1EAEDB]', // Bright Blue
       'bg-[#33C3F0]', // Sky Blue
-      'bg-[#D946EF]', // Magenta Pink
+      'bg-[#0FA0CE]', // Bright Blue
+      'bg-[#221F26]', // Dark Blue/Charcoal
+      'bg-[#2C5282]', // Navy Blue
+      'bg-[#3B82F6]', // Bright Blue
+      'bg-[#1D4ED8]', // Royal Blue
     ];
     
     // Use the hash to select a color from the array
@@ -116,7 +116,7 @@ const CalendarPage = () => {
   // Function to get text color based on background color
   const getTextColor = (bgColor: string) => {
     // Darker backgrounds need white text, lighter ones need dark text
-    const lightBackgrounds = ['bg-[#E5DEFF]'];
+    const lightBackgrounds = ['bg-[#33C3F0]'];
     return lightBackgrounds.includes(bgColor) ? 'text-gray-800' : 'text-white';
   };
 
@@ -201,7 +201,7 @@ const CalendarPage = () => {
                         
                         {event.location && (
                           <div className="flex items-start text-sm text-gray-600">
-                            <span className="mr-2">📍</span>
+                            <MapPin className="h-4 w-4 mr-2" />
                             <span>{event.location}</span>
                           </div>
                         )}
