@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet } from "react-helmet-async";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -106,6 +107,18 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#000080]">
+      <Helmet>
+        <title>Create Account | Grapes</title>
+        <meta name="description" content="Create your Grapes account and start connecting with groups" />
+        <meta property="og:title" content="Create Account | Grapes" />
+        <meta property="og:description" content="Create your Grapes account and start connecting with groups" />
+        <meta property="og:image" content="/lovable-uploads/987d0824-15e3-4e4a-b4e8-535baf108d42.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Create Account | Grapes" />
+        <meta name="twitter:description" content="Create your Grapes account and start connecting with groups" />
+        <meta name="twitter:image" content="/lovable-uploads/987d0824-15e3-4e4a-b4e8-535baf108d42.png" />
+      </Helmet>
+      
       <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg animate-fade-in">
         <div className="text-center">
           <h2 className="text-3xl font-bold">Create your account</h2>

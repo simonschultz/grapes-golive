@@ -1,10 +1,23 @@
 
 import { ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 const About = () => {
   return (
     <div className="min-h-screen bg-[#FEF7CD] p-6">
+      <Helmet>
+        <title>About Grapes</title>
+        <meta name="description" content="Learn more about Grapes, a platform designed to bring people together through shared interests and communities." />
+        <meta property="og:title" content="About Grapes" />
+        <meta property="og:description" content="Learn more about Grapes, a platform designed to bring people together through shared interests and communities." />
+        <meta property="og:image" content="/lovable-uploads/987d0824-15e3-4e4a-b4e8-535baf108d42.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="About Grapes" />
+        <meta name="twitter:description" content="Learn more about Grapes, a platform designed to bring people together through shared interests and communities." />
+        <meta name="twitter:image" content="/lovable-uploads/987d0824-15e3-4e4a-b4e8-535baf108d42.png" />
+      </Helmet>
+      
       <Link to="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-8">
         <ChevronLeft className="h-4 w-4 mr-1" />
         Back to frontpage

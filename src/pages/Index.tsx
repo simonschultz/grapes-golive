@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet } from "react-helmet-async";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -35,6 +36,18 @@ const Index = () => {
   };
 
   return <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 bg-[#000080]">
+      <Helmet>
+        <title>Grapes - create and join groups</title>
+        <meta name="description" content="A simple platform to create and join groups for friends, family and like-minded people." />
+        <meta property="og:title" content="Grapes - create and join groups" />
+        <meta property="og:description" content="A simple platform to create and join groups for friends, family and like-minded people." />
+        <meta property="og:image" content="/lovable-uploads/987d0824-15e3-4e4a-b4e8-535baf108d42.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Grapes - create and join groups" />
+        <meta name="twitter:description" content="A simple platform to create and join groups for friends, family and like-minded people." />
+        <meta name="twitter:image" content="/lovable-uploads/987d0824-15e3-4e4a-b4e8-535baf108d42.png" />
+      </Helmet>
+      
       <main className="w-full max-w-2xl mx-auto text-center space-y-8">
         <div className="flex flex-col items-center">
           <img src="/lovable-uploads/c6d042f1-d2f4-4f1b-9676-48717f7576ff.png" alt="Grapes logo" className="h-24 w-24 mb-4" />
