@@ -205,7 +205,7 @@ const GroupEventOverview = () => {
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold mb-6">{event.title}</h1>
+          <h1 className="text-2xl font-bold mb-6 text-[#000080]">{event.title}</h1>
           
           <div className="space-y-6">
             <div>
@@ -244,7 +244,7 @@ const GroupEventOverview = () => {
                   onClick={() => updateAttendance('yes')}
                   variant={userAttendance === 'yes' ? 'default' : 'outline'}
                   disabled={isUpdating}
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 ${userAttendance === 'yes' ? 'bg-[#000080] hover:bg-[#000080]/90' : ''}`}
                 >
                   <Check className="h-4 w-4" />
                   Yes
@@ -253,7 +253,7 @@ const GroupEventOverview = () => {
                   onClick={() => updateAttendance('no')}
                   variant={userAttendance === 'no' ? 'default' : 'outline'}
                   disabled={isUpdating}
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 ${userAttendance === 'no' ? 'bg-[#000080] hover:bg-[#000080]/90' : ''}`}
                 >
                   <X className="h-4 w-4" />
                   No
@@ -262,7 +262,7 @@ const GroupEventOverview = () => {
                   onClick={() => updateAttendance('maybe')}
                   variant={userAttendance === 'maybe' ? 'default' : 'outline'}
                   disabled={isUpdating}
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 ${userAttendance === 'maybe' ? 'bg-[#000080] hover:bg-[#000080]/90' : ''}`}
                 >
                   <HelpCircle className="h-4 w-4" />
                   Maybe

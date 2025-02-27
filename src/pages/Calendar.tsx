@@ -130,7 +130,7 @@ const CalendarPage = () => {
               alt="Grapes Logo" 
               className="w-8 h-8"
             />
-            <h1 className="text-xl font-semibold">Calendar</h1>
+            <h1 className="text-xl font-semibold text-[#000080]">Calendar</h1>
           </div>
           <Button 
             variant="ghost" 
@@ -150,7 +150,7 @@ const CalendarPage = () => {
           ) : events.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <CalendarIcon className="h-24 w-24 text-gray-400 mb-4" />
-              <p className="text-xl font-semibold text-gray-900">Sorry, no upcoming events</p>
+              <p className="text-xl font-semibold text-[#000080]">Sorry, no upcoming events</p>
               <p className="text-gray-500 mt-2">
                 All events that you (might) attend, will show up here.
               </p>
