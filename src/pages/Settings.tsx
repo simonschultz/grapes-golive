@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, Smartphone, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,35 @@ const Settings = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [acceptEmail, setAcceptEmail] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    // Check if the device is iOS
+    const checkIfIOS = () => {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      return /iphone|ipad|ipod/.test(userAgent);
+    };
+    
+    setIsIOS(checkIfIOS());
+
+    // Listen for the beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      setDeferredPrompt(e);
+      // Update UI to notify the user they can add to home screen
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -172,6 +202,44 @@ const Settings = () => {
     }
   };
 
+  const addToHomeScreen = async () => {
+    if (deferredPrompt) {
+      // Show the install prompt
+      deferredPrompt.prompt();
+      
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      // We no longer need the prompt regardless of outcome
+      setDeferredPrompt(null);
+      
+      // Check the outcome
+      if (outcome === 'accepted') {
+        toast({
+          title: "Success!",
+          description: "The app is being installed on your home screen.",
+        });
+      } else {
+        toast({
+          title: "Installation cancelled",
+          description: "You can install the app later if you change your mind.",
+        });
+      }
+    } else if (isIOS) {
+      // For iOS devices, show specific instructions
+      toast({
+        title: "Add to Home Screen - iOS",
+        description: "Tap the share icon in your browser and select 'Add to Home Screen'.",
+      });
+    } else {
+      // For other browsers that don't support installation
+      toast({
+        title: "Add to Home Screen",
+        description: "Open your browser menu and select 'Add to Home Screen' or 'Install App' to create a shortcut.",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="flex justify-between items-center p-4 border-b">
@@ -247,11 +315,44 @@ const Settings = () => {
                 </Label>
               </div>
             </div>
+            
+            {/* Add to home screen section */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <Smartphone className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h3 className="font-medium text-blue-800">Add Grapes to home screen</h3>
+                  <p className="text-sm text-gray-700 mt-1">
+                    {isInstallable 
+                      ? "Your browser supports adding this app to your home screen."
+                      : isIOS 
+                        ? "Tap the button below for instructions on adding to your iOS home screen."
+                        : "Clicking below will help add a bookmark/shortcut on your device's home screen."
+                    }
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-2 border-blue-300 text-blue-800 hover:bg-blue-100"
+                    onClick={addToHomeScreen}
+                  >
+                    {isInstallable ? "Install App" : "Add to home screen"}
+                  </Button>
+                  
+                  {isIOS && (
+                    <div className="mt-2 flex items-start space-x-2 text-xs text-blue-700">
+                      <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <p>On iOS: Tap the share icon (rectangle with arrow) at the bottom of your browser and scroll to find "Add to Home Screen"</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
 
             <Button
               className="w-full"
               onClick={handleSave}
               disabled={isLoading}
+              style={{ backgroundColor: "#000080" }}
             >
               {isLoading ? "Saving..." : "Save changes"}
             </Button>
