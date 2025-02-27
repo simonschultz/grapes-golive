@@ -15,6 +15,8 @@ interface FeatureSectionProps {
   className?: string;
   variant?: "default" | "primary";
   columns?: 1 | 2 | 3;
+  iconSize?: number;
+  compact?: boolean;
 }
 
 export const FeatureSection = ({
@@ -22,7 +24,9 @@ export const FeatureSection = ({
   items,
   className = "",
   variant = "default",
-  columns = 2
+  columns = 2,
+  iconSize = 6,
+  compact = false
 }: FeatureSectionProps) => {
   const getBgColor = (variant: string) => {
     if (variant === "primary") return "bg-white/10 hover:bg-white/15";
@@ -57,6 +61,8 @@ export const FeatureSection = ({
     }
   };
 
+  const padding = compact ? "p-4" : "p-6";
+
   return (
     <div className={className}>
       {title && (
@@ -69,17 +75,17 @@ export const FeatureSection = ({
         {items.map((item, index) => (
           <div 
             key={index}
-            className={`${getBgColor(variant)} backdrop-blur-sm p-6 rounded-xl transition-colors duration-300 ${item.onClick ? 'cursor-pointer' : ''}`}
+            className={`${getBgColor(variant)} backdrop-blur-sm ${padding} rounded-xl transition-colors duration-300 ${item.onClick ? 'cursor-pointer' : ''}`}
             onClick={item.onClick}
           >
-            <div className="flex items-center gap-4 mb-3">
-              <div className={`p-3 ${getIconBgColor(variant)} rounded-lg`}>
-                <item.icon className={`h-6 w-6 ${getTextColor(variant)}`} />
+            <div className="flex items-center gap-3 mb-2">
+              <div className={`p-2 ${getIconBgColor(variant)} rounded-lg`}>
+                <item.icon className={`h-${iconSize} w-${iconSize} ${getTextColor(variant)}`} />
               </div>
-              <h3 className={`text-xl font-semibold ${getTextColor(variant)}`}>{item.title}</h3>
+              <h3 className={`text-lg font-semibold ${getTextColor(variant)}`}>{item.title}</h3>
             </div>
             {item.description && (
-              <p className={getDescriptionColor(variant)}>
+              <p className={`text-sm ${getDescriptionColor(variant)}`}>
                 {item.description}
               </p>
             )}

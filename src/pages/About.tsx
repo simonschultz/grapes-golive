@@ -1,9 +1,43 @@
 
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Users, Globe, Calendar, UserCheck, MessageSquare, Grid } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { FeatureSection, FeatureItem } from "@/components/ui/feature-section";
 
 const About = () => {
+  const keyFeatures: FeatureItem[] = [
+    {
+      icon: Users,
+      title: "Create private and public groups",
+      description: "Start groups for any purpose and control who can join"
+    },
+    {
+      icon: Globe,
+      title: "Explore public groups",
+      description: "Discover and join groups that match your interests"
+    },
+    {
+      icon: Calendar,
+      title: "Organize group events",
+      description: "Schedule and manage events for your group members"
+    },
+    {
+      icon: UserCheck,
+      title: "Manage event attendance",
+      description: "Track RSVPs and manage who's attending your events"
+    },
+    {
+      icon: MessageSquare,
+      title: "Chat with other group members",
+      description: "Communicate easily with everyone in your groups"
+    },
+    {
+      icon: Grid,
+      title: "Overview across all groups",
+      description: "See all your group activities in one convenient place"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-[#FEF7CD] p-6">
       <Helmet>
@@ -43,13 +77,11 @@ const About = () => {
           </p>
 
           <h2 className="text-xl font-semibold mt-8">Key Features</h2>
-          <ul className="list-disc pl-6 space-y-2">
-            <li>Create and manage groups for any purpose</li>
-            <li>Organize events and activities</li>
-            <li>Group chat and communications</li>
-            <li>Member management and permissions</li>
-            <li>Calendar integration for event planning</li>
-          </ul>
+          <FeatureSection 
+            items={keyFeatures} 
+            className="mt-4" 
+            columns={1}
+          />
 
           <p className="mt-8">
             Founded with the vision of making group organization simple and accessible, we continue to develop features that help communities thrive.
