@@ -5,7 +5,7 @@ import { Settings, Plus, User, UsersRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { NavigationFooter } from "@/components/navigation/NavigationFooter";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 interface Group {
   id: string;
@@ -141,9 +141,9 @@ const Groups = () => {
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <div className="flex-1 pb-16 relative">
-        <header className="flex justify-between items-center p-4 bg-white border-b">
+    <AppLayout>
+      <div className="relative">
+        <header className="flex justify-between items-center p-4 bg-white border-b md:hidden">
           <div className="flex items-center gap-2">
             <img 
               src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
@@ -155,12 +155,16 @@ const Groups = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="text-[#000080]"
+            className="text-[#000080] md:hidden"
             onClick={() => navigate('/settings')}
           >
             <Settings className="h-5 w-5" />
           </Button>
         </header>
+
+        <div className="hidden md:flex justify-between items-center p-4 bg-white border-b">
+          <h1 className="text-xl font-semibold">My groups</h1>
+        </div>
 
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
@@ -173,17 +177,14 @@ const Groups = () => {
         )}
 
         <Button
-          className="fixed bottom-20 right-4 rounded-full w-14 h-14 shadow-lg bg-[#000080] hover:bg-[#000060]"
+          className="fixed bottom-20 right-4 rounded-full w-14 h-14 shadow-lg bg-[#000080] hover:bg-[#000060] md:bottom-4"
           onClick={() => navigate('/groups/create')}
         >
           <Plus className="h-6 w-6" />
         </Button>
       </div>
-
-      <NavigationFooter />
-    </div>
+    </AppLayout>
   );
 };
 
 export default Groups;
-
