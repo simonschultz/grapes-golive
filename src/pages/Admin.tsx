@@ -22,7 +22,7 @@ const Admin = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState<SiteSettings>({
     id: '',
-    front_page_intro: "Create and join groups for friends, family and like-minded people."
+    front_page_intro: "Welcome. We are Grapes. Another alternative to other great group tools."
   });
 
   useEffect(() => {

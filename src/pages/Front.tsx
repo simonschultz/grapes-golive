@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Home, Users, Calendar, BellRing, Settings, Shield, MessageSquare, ArrowRight, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +56,7 @@ const Front = () => {
   const [hasGroups, setHasGroups] = useState(false);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>({
     id: '',
-    front_page_intro: "Create and join groups for friends, family and like-minded people."
+    front_page_intro: "Welcome. We are Grapes. Another alternative to other great group tools."
   });
 
   useEffect(() => {
