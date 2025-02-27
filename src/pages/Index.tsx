@@ -68,21 +68,21 @@ const Index = () => {
               </Link>
             </div>}
         </div>
+        
+        <footer className="mt-12 w-full p-6 text-sm text-center">
+          <nav className="space-x-6">
+            <a href="/about" className="text-white/70 hover:text-white transition-colors duration-200 underline underline-offset-4">
+              About
+            </a>
+            <a href="/privacy" className="text-white/70 hover:text-white transition-colors duration-200 underline underline-offset-4">
+              Privacy policy
+            </a>
+            <a href="/terms" className="text-white/70 hover:text-white transition-colors duration-200 underline underline-offset-4">
+              Terms of service
+            </a>
+          </nav>
+        </footer>
       </main>
-
-      <footer className="fixed bottom-0 left-0 w-full p-6 text-sm text-center">
-        <nav className="space-x-6">
-          <a href="/about" className="text-white/70 hover:text-white transition-colors duration-200 underline underline-offset-4">
-            About
-          </a>
-          <a href="/privacy" className="text-white/70 hover:text-white transition-colors duration-200 underline underline-offset-4">
-            Privacy policy
-          </a>
-          <a href="/terms" className="text-white/70 hover:text-white transition-colors duration-200 underline underline-offset-4">
-            Terms of service
-          </a>
-        </nav>
-      </footer>
     </div>;
 };
 
