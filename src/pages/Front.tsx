@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Home, Users, Calendar, BellRing, Settings, Shield, MessageSquare, ArrowRight, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -80,13 +79,13 @@ const Front = () => {
         }
 
         // Fetch site settings
-        const { data: settingsData } = await supabase
+        const { data: settingsData, error: settingsError } = await supabase
           .from('site_settings')
           .select('*')
-          .maybeSingle();
+          .single();
         
-        if (settingsData) {
-          setSiteSettings(settingsData);
+        if (settingsData && !settingsError) {
+          setSiteSettings(settingsData as SiteSettings);
         }
 
         // Get notifications
@@ -195,7 +194,6 @@ const Front = () => {
     }
   };
 
-  // Feature section items
   const featureItems: FeatureItem[] = [
     {
       icon: Users,
@@ -234,14 +232,13 @@ const Front = () => {
                 <img 
                   src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
                   alt="Grapes Logo" 
-                  className="w-24 h-24" // Reduced from w-32 h-32
+                  className="w-24 h-24"
                 />
               </div>
               <p className="text-gray-600">
                 {siteSettings.front_page_intro}
               </p>
               
-              {/* Replace buttons with FeatureSection */}
               <div className="pt-4 pb-5">
                 <FeatureSection 
                   items={featureItems}

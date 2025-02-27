@@ -369,6 +369,27 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          created_at: string | null
+          front_page_intro: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          front_page_intro?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          front_page_intro?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_last_visits: {
         Row: {
           created_at: string | null

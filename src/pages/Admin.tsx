@@ -30,7 +30,7 @@ const Admin = () => {
         const { data, error } = await supabase
           .from('site_settings')
           .select('*')
-          .maybeSingle();
+          .single();
 
         if (error) {
           console.error('Error fetching settings:', error);
@@ -38,7 +38,7 @@ const Admin = () => {
         }
 
         if (data) {
-          setSettings(data);
+          setSettings(data as SiteSettings);
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
@@ -76,7 +76,10 @@ const Admin = () => {
 
       const { data, error } = await supabase
         .from('site_settings')
-        .update({ front_page_intro: settings.front_page_intro })
+        .update({
+          front_page_intro: settings.front_page_intro,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', settings.id)
         .select()
         .single();
@@ -84,7 +87,7 @@ const Admin = () => {
       if (error) throw error;
 
       if (data) {
-        setSettings(data);
+        setSettings(data as SiteSettings);
       }
 
       toast({
