@@ -11,7 +11,8 @@ import {
   Calendar, 
   Bell, 
   Grid3X3, 
-  Heart 
+  Heart,
+  User,
 } from "lucide-react";
 
 const Index = () => {
@@ -69,7 +70,17 @@ const Index = () => {
 
         <div className="space-y-4">
           <Button className="bg-white/20 backdrop-blur-lg hover:bg-white/30 text-white text-lg px-8 py-6 rounded-xl font-medium transition-all duration-300 hover:-translate-y-1" onClick={handleButtonClick}>
-            {isAuthenticated ? "Go to dashboard" : "Create account"}
+            {isAuthenticated ? (
+              <>
+                <Users className="mr-2 h-5 w-5" />
+                Go to dashboard
+              </>
+            ) : (
+              <>
+                <User className="mr-2 h-5 w-5" />
+                Create account
+              </>
+            )}
           </Button>
           {!isAuthenticated && <div>
               <Link to="/magic-link" className="text-white/40 hover:text-white transition-colors duration-200 underline underline-offset-4">
