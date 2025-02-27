@@ -1,11 +1,13 @@
+
 import { Button } from "@/components/ui/button";
-import { Home, Users, Calendar, BellRing, Settings, Shield, MessageSquare, ArrowRight } from "lucide-react";
+import { Home, Users, Calendar, BellRing, Settings, Shield, MessageSquare, ArrowRight, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { NavigationFooter } from "@/components/navigation/NavigationFooter";
+import { FeatureSection, FeatureItem } from "@/components/ui/feature-section";
 
 interface PendingRequest {
   group: {
@@ -36,6 +38,13 @@ interface TopGroup {
   member_count: number;
 }
 
+interface SiteSettings {
+  id: string;
+  front_page_intro: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 const Front = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -45,6 +54,10 @@ const Front = () => {
   const [notificationCount, setNotificationCount] = useState(0);
   const [topGroups, setTopGroups] = useState<TopGroup[]>([]);
   const [hasGroups, setHasGroups] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({
+    id: '',
+    front_page_intro: "Welcome. We are Grapes. Another alternative to other great group tools."
+  });
 
   useEffect(() => {
     const checkProfile = async () => {
@@ -64,6 +77,16 @@ const Front = () => {
         if (!profile?.first_name || !profile?.last_name) {
           navigate('/welcome');
           return;
+        }
+
+        // Fetch site settings
+        const { data: settingsData, error: settingsError } = await supabase
+          .from('site_settings')
+          .select('*')
+          .single();
+        
+        if (settingsData && !settingsError) {
+          setSiteSettings(settingsData as SiteSettings);
         }
 
         // Get notifications
@@ -172,6 +195,19 @@ const Front = () => {
     }
   };
 
+  const featureItems: FeatureItem[] = [
+    {
+      icon: Users,
+      title: "Find groups to join",
+      onClick: () => navigate('/groups/join')
+    },
+    {
+      icon: UserPlus,
+      title: "Create new group",
+      onClick: () => navigate('/groups/create')
+    }
+  ];
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -197,26 +233,25 @@ const Front = () => {
                 <img 
                   src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
                   alt="Grapes Logo" 
-                  className="w-32 h-32"
+                  className="w-24 h-24"
                 />
               </div>
               <p className="text-gray-600">
-                Create and join groups for friends, family and like-minded people.
+                {siteSettings.front_page_intro}
               </p>
-              <div className="max-w-md mx-auto pt-4 pb-5 space-y-3 flex flex-col items-center">
-                <Button 
-                  onClick={() => navigate('/groups/join')}
-                  className="flex items-center justify-center gap-2 bg-[#000080] hover:bg-[#000060]"
-                >
-                  <Users className="h-5 w-5" />
-                  Find groups to join
-                </Button>
-                <button
-                  onClick={() => navigate('/groups/create')}
-                  className="w-full text-center text-[#000080] hover:underline"
-                >
-                  + create new group
-                </button>
+              
+              <div className="pt-4 pb-5">
+                <FeatureSection 
+                  items={featureItems}
+                  columns={2}
+                  className="max-w-xl mx-auto"
+                />
+              </div>
+              
+              <div className="text-sm text-gray-500 mt-2">
+                <a href="mailto:hi@grapes.group" className="hover:text-[#000080] transition-colors">
+                  Need help? We are just an e-mail away.
+                </a>
               </div>
             </div>
 

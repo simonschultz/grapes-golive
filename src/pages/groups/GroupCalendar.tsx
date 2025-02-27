@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Home, MessageSquare, Calendar, Users, Bell, Settings, Plus } from "lucide-react";
+import { Home, MessageSquare, Calendar, Users, Bell, Settings, Plus, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -96,6 +96,37 @@ const GroupCalendar = () => {
     checkAccess();
   }, [slug, navigate, toast]);
 
+  // Function to get color based on event title
+  const getEventColor = (eventTitle: string) => {
+    // Simple hash function to generate a consistent color for each event
+    const hash = eventTitle.split('').reduce((acc, char) => {
+      return char.charCodeAt(0) + ((acc << 5) - acc);
+    }, 0);
+    
+    // List of attractive blue shades instead of purple
+    const colors = [
+      'bg-[#0EA5E9]', // Ocean Blue
+      'bg-[#1EAEDB]', // Bright Blue
+      'bg-[#33C3F0]', // Sky Blue
+      'bg-[#0FA0CE]', // Bright Blue
+      'bg-[#221F26]', // Dark Blue/Charcoal
+      'bg-[#2C5282]', // Navy Blue
+      'bg-[#3B82F6]', // Bright Blue
+      'bg-[#1D4ED8]', // Royal Blue
+    ];
+    
+    // Use the hash to select a color from the array
+    const colorIndex = Math.abs(hash) % colors.length;
+    return colors[colorIndex];
+  };
+
+  // Function to get text color based on background color
+  const getTextColor = (bgColor: string) => {
+    // Darker backgrounds need white text, lighter ones need dark text
+    const lightBackgrounds = ['bg-[#33C3F0]'];
+    return lightBackgrounds.includes(bgColor) ? 'text-gray-800' : 'text-white';
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -173,42 +204,57 @@ const GroupCalendar = () => {
               No events scheduled yet. Create your first event using the button below!
             </p>
           ) : (
-            <div className="space-y-4 mb-6">
-              {events.map((event) => (
-                <div
-                  key={event.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
-                  onClick={() => navigate(`/groups/${slug}/calendar/${event.id}`)}
-                >
-                  <div className="flex gap-6 items-start">
-                    <div className="min-w-[80px] text-center">
-                      <p className="text-4xl font-bold">
-                        {format(new Date(event.date), 'd')}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {format(new Date(event.date), 'MMM')}
-                      </p>
+            <div className="space-y-6 mb-6">
+              {events.map((event) => {
+                const bgColor = getEventColor(event.title);
+                const textColor = getTextColor(bgColor);
+                
+                return (
+                  <div
+                    key={event.id}
+                    className="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+                    onClick={() => navigate(`/groups/${slug}/calendar/${event.id}`)}
+                  >
+                    <div className={`${bgColor} p-4`}>
+                      <h3 className={`font-bold text-xl ${textColor}`}>{event.title}</h3>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{event.title}</h3>
-                      {event.description && (
-                        <p className="text-gray-600 mt-1">{event.description}</p>
-                      )}
-                      <p className="text-gray-600 mt-2">
-                        {format(new Date(`2000-01-01T${event.time_start}`), 'h:mm a')}
-                        {event.time_end && (
-                          <> - {format(new Date(`2000-01-01T${event.time_end}`), 'h:mm a')}</>
-                        )}
-                      </p>
-                      {event.location && (
-                        <p className="text-gray-600 mt-2">
-                          📍 {event.location}
+                    
+                    <div className="flex bg-white">
+                      <div className="min-w-[100px] p-4 flex flex-col items-center justify-center border-r">
+                        <p className="text-4xl font-bold text-gray-800">
+                          {format(new Date(event.date), 'd')}
                         </p>
-                      )}
+                        <p className="text-sm text-gray-600 uppercase font-medium">
+                          {format(new Date(event.date), 'MMM')}
+                        </p>
+                      </div>
+                      
+                      <div className="p-4 flex-1">
+                        {event.description && (
+                          <p className="text-gray-700 mb-3">{event.description}</p>
+                        )}
+                        
+                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <Calendar className="h-4 w-4 mr-2 inline-block" />
+                          <span>
+                            {format(new Date(`2000-01-01T${event.time_start}`), 'h:mm a')}
+                            {event.time_end && (
+                              <> - {format(new Date(`2000-01-01T${event.time_end}`), 'h:mm a')}</>
+                            )}
+                          </span>
+                        </div>
+                        
+                        {event.location && (
+                          <div className="flex items-start text-sm text-gray-600">
+                            <MapPin className="h-4 w-4 mr-2" />
+                            <span>{event.location}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           

@@ -1,9 +1,37 @@
 
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Users, Globe, Calendar, UserCheck, MessageSquare, Grid } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { FeatureSection, FeatureItem } from "@/components/ui/feature-section";
 
 const About = () => {
+  const keyFeatures: FeatureItem[] = [
+    {
+      icon: Users,
+      title: "Create private and public groups",
+    },
+    {
+      icon: Globe,
+      title: "Explore public groups",
+    },
+    {
+      icon: Calendar,
+      title: "Organize group events",
+    },
+    {
+      icon: UserCheck,
+      title: "Manage event attendance",
+    },
+    {
+      icon: MessageSquare,
+      title: "Chat with other group members",
+    },
+    {
+      icon: Grid,
+      title: "Overview across all groups",
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-[#FEF7CD] p-6">
       <Helmet>
@@ -39,26 +67,41 @@ const About = () => {
 
           <h2 className="text-xl font-semibold mt-8">Our Mission</h2>
           <p>
-            We believe that meaningful connections happen when people come together around shared interests and purposes. Our mission is to make it easy for anyone to create, join, and manage groups that matter to them.
+            We believe that meaningful connections happen when people come together around shared interests and purposes. Our mission is to make it easy for anyone to create, join, and manage groups that matter to them. We want to create a European alternative. That respects our users, their data, social graph and interactions.
           </p>
 
           <h2 className="text-xl font-semibold mt-8">Key Features</h2>
-          <ul className="list-disc pl-6 space-y-2">
-            <li>Create and manage groups for any purpose</li>
-            <li>Organize events and activities</li>
-            <li>Group chat and communications</li>
-            <li>Member management and permissions</li>
-            <li>Calendar integration for event planning</li>
-          </ul>
+          <FeatureSection 
+            items={keyFeatures} 
+            className="mt-4" 
+            columns={1}
+            variant="clean"
+          />
 
           <p className="mt-8">
             Founded with the vision of making group organization simple and accessible, we continue to develop features that help communities thrive.
           </p>
 
+          <h2 className="text-xl font-semibold mt-8">How we manage privacy and data</h2>
+          <p>
+            Grapes is founded as an alternative to larger platforms harvesting data and insights on individual users. 
+            We are limiting the collection of data. Only collecting data and information which is required to make the service work. 
+            We do not share any of your data with others than explicitly mentioned Data Processors - like Supabase, which is the backbone and database hosting the data. All data is stored on servers in Frankfurt.
+          </p>
+          <p className="mt-2">
+            More details can be found in our <Link to="/privacy/" className="text-blue-600 hover:text-blue-800 underline">privacy policy</Link>.
+          </p>
+
           <div className="mt-12 pt-8 border-t border-gray-200">
             <h2 className="text-xl font-semibold mb-4">About Simon Schultz</h2>
             <p>
-              Grapes is the brainchild of <a href="https://simonschultz.dk" className="text-blue-600 hover:text-blue-800 underline">Simon Schultz</a>. I have built the platform to shape a proper alternative to what else is out there. If you have any questions or comments, please write me on <span className="text-blue-600">hi@grapes.group</span>.
+              Grapes is the brainchild of <a href="https://simonschultz.dk" className="text-blue-600 hover:text-blue-800 underline">Simon Schultz</a>. To create an alternative to other (great) group services available in the market. 
+              We have just launched (February 21st 2025). So still building and exploring how we can make things even better. 
+              If you have any questions, suggestions or comments, please write me on <span className="text-blue-600">hi@grapes.group</span>.
+            </p>
+            <p className="mt-4">
+              <b>Simon Schultz</b><br />
+              Founder, Grapes
             </p>
           </div>
         </div>
