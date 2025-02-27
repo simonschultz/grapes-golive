@@ -160,6 +160,7 @@ const Activity = () => {
             </div>
           ) : (
             <div className="space-y-3">
+              <p className="text-xs text-gray-500 mb-2">Activities in your groups...</p>
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
