@@ -167,9 +167,9 @@ const CalendarPage = () => {
                     className="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
                     onClick={() => navigate(`/groups/${event.group.slug}/calendar/${event.id}`)}
                   >
-                    <div className={`${bgColor} p-4`}>
-                      <h3 className={`font-bold text-xl ${textColor}`}>{event.title}</h3>
-                      <p className={`${textColor} opacity-90 text-sm font-medium mt-1`}>
+                    <div className={`bg-[#000080] p-4`}>
+                      <h3 className={`font-bold text-xl text-white`}>{event.title}</h3>
+                      <p className={`text-white opacity-90 text-sm font-medium mt-1`}>
                         {event.group.title}
                       </p>
                     </div>
