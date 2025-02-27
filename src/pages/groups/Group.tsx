@@ -175,12 +175,17 @@ const Group = () => {
   return (
     <>
       <Helmet>
+        <title>{group.title} | Grapes</title>
+        <meta name="description" content={group.description || `Join ${group.title} on Grapes`} />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={currentUrl} />
         <meta property="og:title" content={group.title} />
         <meta property="og:description" content={group.description || `Join ${group.title} on Grapes`} />
         <meta property="og:image" content={imageUrl || defaultImageUrl} />
-        <meta property="og:url" content={currentUrl} />
-        <meta property="og:type" content="website" />
         
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta property="twitter:domain" content={window.location.hostname} />
         <meta property="twitter:url" content={currentUrl} />
