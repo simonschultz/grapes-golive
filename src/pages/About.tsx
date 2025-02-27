@@ -67,7 +67,7 @@ const About = () => {
 
           <h2 className="text-xl font-semibold mt-8">Our Mission</h2>
           <p>
-            We believe that meaningful connections happen when people come together around shared interests and purposes. Our mission is to make it easy for anyone to create, join, and manage groups that matter to them.
+            We believe that meaningful connections happen when people come together around shared interests and purposes. Our mission is to make it easy for anyone to create, join, and manage groups that matter to them. We want to create a European alternative. That respects our users, their data, social graph and interactions.
           </p>
 
           <h2 className="text-xl font-semibold mt-8">Key Features</h2>
