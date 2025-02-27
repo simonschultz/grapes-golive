@@ -9,32 +9,26 @@ const About = () => {
     {
       icon: Users,
       title: "Create private and public groups",
-      description: "Start groups for any purpose and control who can join"
     },
     {
       icon: Globe,
       title: "Explore public groups",
-      description: "Discover and join groups that match your interests"
     },
     {
       icon: Calendar,
       title: "Organize group events",
-      description: "Schedule and manage events for your group members"
     },
     {
       icon: UserCheck,
       title: "Manage event attendance",
-      description: "Track RSVPs and manage who's attending your events"
     },
     {
       icon: MessageSquare,
       title: "Chat with other group members",
-      description: "Communicate easily with everyone in your groups"
     },
     {
       icon: Grid,
       title: "Overview across all groups",
-      description: "See all your group activities in one convenient place"
     }
   ];
 
@@ -81,6 +75,7 @@ const About = () => {
             items={keyFeatures} 
             className="mt-4" 
             columns={1}
+            variant="clean"
           />
 
           <p className="mt-8">

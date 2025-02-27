@@ -13,7 +13,7 @@ interface FeatureSectionProps {
   title?: string;
   items: FeatureItem[];
   className?: string;
-  variant?: "default" | "primary";
+  variant?: "default" | "primary" | "clean";
   columns?: 1 | 2 | 3;
   iconSize?: number;
   compact?: boolean;
@@ -30,11 +30,13 @@ export const FeatureSection = ({
 }: FeatureSectionProps) => {
   const getBgColor = (variant: string) => {
     if (variant === "primary") return "bg-white/10 hover:bg-white/15";
+    if (variant === "clean") return ""; // No background for clean variant
     return "bg-slate-50 hover:bg-slate-100";
   };
 
   const getIconBgColor = (variant: string) => {
     if (variant === "primary") return "bg-white/20";
+    if (variant === "clean") return ""; // No background for clean variant
     return "bg-blue-100";
   };
 
@@ -61,7 +63,7 @@ export const FeatureSection = ({
     }
   };
 
-  const padding = compact ? "p-4" : "p-6";
+  const padding = compact ? "p-4" : variant === "clean" ? "py-2" : "p-6";
 
   return (
     <div className={className}>
@@ -78,14 +80,14 @@ export const FeatureSection = ({
             className={`${getBgColor(variant)} backdrop-blur-sm ${padding} rounded-xl transition-colors duration-300 ${item.onClick ? 'cursor-pointer' : ''}`}
             onClick={item.onClick}
           >
-            <div className="flex items-center gap-3 mb-2">
-              <div className={`p-2 ${getIconBgColor(variant)} rounded-lg`}>
+            <div className="flex items-center gap-3">
+              <div className={`${variant !== "clean" ? "p-2" : ""} ${getIconBgColor(variant)} rounded-lg`}>
                 <item.icon className={`h-${iconSize} w-${iconSize} ${getTextColor(variant)}`} />
               </div>
               <h3 className={`text-lg font-semibold ${getTextColor(variant)}`}>{item.title}</h3>
             </div>
-            {item.description && (
-              <p className={`text-sm ${getDescriptionColor(variant)}`}>
+            {item.description && variant !== "clean" && (
+              <p className={`text-sm ${getDescriptionColor(variant)} mt-2`}>
                 {item.description}
               </p>
             )}
