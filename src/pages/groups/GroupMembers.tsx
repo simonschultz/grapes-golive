@@ -12,7 +12,7 @@ import { GroupNavigation } from "@/components/group/GroupNavigation";
 interface GroupMember {
   user_id: string;
   role: string;
-  joined_at: string;
+  created_at: string; // Changed from joined_at to created_at to match database schema
   profiles: {
     first_name: string | null;
     last_name: string | null;
@@ -77,13 +77,13 @@ const GroupMembers = () => {
 
         setUserRole(memberData.role);
 
-        // Fetch members
+        // Fetch members - updated to use created_at instead of joined_at
         const { data: membersData, error: membersError } = await supabase
           .from('group_members')
           .select(`
             user_id,
             role,
-            joined_at,
+            created_at,
             profiles:user_id (
               first_name,
               last_name,
@@ -97,14 +97,14 @@ const GroupMembers = () => {
         if (membersError) throw membersError;
         setMembers(membersData || []);
 
-        // Fetch join requests if the user is an admin
+        // Fetch join requests if the user is an admin - updated to use created_at
         if (memberData.role === 'admin' || groupData.created_by === user.id) {
           const { data: requestsData, error: requestsError } = await supabase
             .from('group_members')
             .select(`
               user_id,
               role,
-              joined_at,
+              created_at,
               profiles:user_id (
                 first_name,
                 last_name,
