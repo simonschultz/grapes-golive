@@ -1,64 +1,137 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BellRing, Calendar, MessageSquare, Users, ChevronRight } from "lucide-react";
+import { BellRing, Calendar, MessageSquare, Users, ChevronRight, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+
+type Notification = {
+  id: string;
+  type: string;
+  message: string;
+  read: boolean;
+  group_id: string;
+  created_at: string;
+  group_slug?: string; // Will be populated after fetching
+};
 
 const Activity = () => {
   const [tab, setTab] = useState("all");
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   
-  // Sample activity items - in a real app, these would come from a database
-  const activities = [
-    {
-      id: '1',
-      type: 'chat',
-      message: 'John posted a new message in Community Garden',
-      time: '2 hours ago',
-      read: false,
-      groupSlug: 'community-garden',
-      icon: <MessageSquare className="h-4 w-4" />
-    },
-    {
-      id: '2',
-      type: 'event',
-      message: 'New event "Weekly Meeting" in Neighborhood Watch',
-      time: 'Yesterday',
-      read: true,
-      groupSlug: 'neighborhood-watch',
-      icon: <Calendar className="h-4 w-4" />
-    },
-    {
-      id: '3',
-      type: 'member',
-      message: 'Sarah joined Book Lovers Club',
-      time: '2 days ago',
-      read: true,
-      groupSlug: 'book-lovers',
-      icon: <Users className="h-4 w-4" />
-    },
-    {
-      id: '4',
-      type: 'chat',
-      message: 'New replies in "Gardening Tips" thread',
-      time: '3 days ago',
-      read: true,
-      groupSlug: 'community-garden',
-      icon: <MessageSquare className="h-4 w-4" />
-    }
-  ];
-
-  // Filter activities based on the selected tab
-  const filteredActivities = tab === "all" 
-    ? activities 
-    : activities.filter(activity => activity.type === tab);
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Get the current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        
+        // Fetch notifications for the current user
+        const { data, error } = await supabase
+          .from('notifications')
+          .select(`
+            *,
+            groups:group_id (slug)
+          `)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        // Add the group slug to each notification for navigation
+        const notificationsWithSlug = data.map((notification) => ({
+          ...notification,
+          group_slug: notification.groups?.slug
+        }));
+        
+        setNotifications(notificationsWithSlug);
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
+        setError(err instanceof Error ? err.message : "Failed to load notifications");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchNotifications();
+  }, []);
+  
+  // Filter notifications based on the selected tab
+  const filteredNotifications = tab === "all" 
+    ? notifications 
+    : notifications.filter(notification => notification.type === tab);
 
   // Handle marking an item as read
-  const handleActivityClick = (activity: any) => {
-    // In a real app, this would update the read status in the database
-    navigate(`/groups/${activity.groupSlug}`);
+  const handleNotificationClick = async (notification: Notification) => {
+    try {
+      if (!notification.read) {
+        // Update the read status in the database
+        const { error } = await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('id', notification.id);
+        
+        if (error) throw error;
+        
+        // Update the local state
+        setNotifications(notifications.map(item => 
+          item.id === notification.id ? { ...item, read: true } : item
+        ));
+      }
+      
+      // Navigate to the group page
+      if (notification.group_slug) {
+        navigate(`/groups/${notification.group_slug}`);
+      }
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
+    }
+  };
+  
+  // Helper function to format the time of a notification
+  const formatNotificationTime = (createdAt: string) => {
+    const date = new Date(createdAt);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return "Just now";
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 172800) {
+      return "Yesterday";
+    } else {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} days ago`;
+    }
+  };
+  
+  // Get the appropriate icon based on notification type
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'chat':
+        return <MessageSquare className="h-4 w-4" />;
+      case 'event':
+        return <Calendar className="h-4 w-4" />;
+      case 'member':
+        return <Users className="h-4 w-4" />;
+      default:
+        return <BellRing className="h-4 w-4" />;
+    }
   };
 
   return (
@@ -85,22 +158,33 @@ const Activity = () => {
                 </div>
                 <TabsContent value={tab} className="mt-0">
                   <CardContent className="pt-4">
-                    {filteredActivities.length > 0 ? (
+                    {isLoading ? (
+                      <div className="flex justify-center items-center py-8">
+                        <Loader2 className="h-6 w-6 text-[#000080] animate-spin" />
+                        <span className="ml-2">Loading activities...</span>
+                      </div>
+                    ) : error ? (
+                      <div className="text-center text-red-500 py-4">
+                        {error}
+                      </div>
+                    ) : filteredNotifications.length > 0 ? (
                       <div className="space-y-4">
-                        {filteredActivities.map((activity) => (
+                        {filteredNotifications.map((notification) => (
                           <div 
-                            key={activity.id} 
-                            className={`flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0 cursor-pointer ${!activity.read ? 'bg-blue-50' : ''}`}
-                            onClick={() => handleActivityClick(activity)}
+                            key={notification.id} 
+                            className={`flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`}
+                            onClick={() => handleNotificationClick(notification)}
                           >
                             <div className="bg-[#000080]/10 text-[#000080] rounded-full p-2 mt-1">
-                              {activity.icon}
+                              {getNotificationIcon(notification.type)}
                             </div>
                             <div className="flex-1">
-                              <p className={`text-sm ${!activity.read ? 'font-medium' : ''}`}>
-                                {activity.message}
+                              <p className={`text-sm ${!notification.read ? 'font-medium' : ''}`}>
+                                {notification.message}
                               </p>
-                              <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {formatNotificationTime(notification.created_at)}
+                              </p>
                             </div>
                             <ChevronRight className="h-4 w-4 text-gray-400 mt-2" />
                           </div>
