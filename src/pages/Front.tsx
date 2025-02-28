@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { Settings, Shield, MessageSquare, ArrowRight, UserPlus } from "lucide-react";
+import { Settings, Shield, MessageSquare, ArrowRight, UserPlus, Calendar, Users, BellRing } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
