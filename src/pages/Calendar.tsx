@@ -1,37 +1,167 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronRight, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+
+interface Event {
+  id: string;
+  title: string;
+  date: string;
+  time_start: string;
+  time_end: string | null;
+  location: string | null;
+  groupSlug: string;
+  groupName: string;
+}
 
 const Calendar = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Sample upcoming events - in a real app, these would come from a database
-  const upcomingEvents = [
-    {
-      id: '1',
-      title: 'Weekly Group Meeting',
-      date: 'Tomorrow at 6:00 PM',
-      groupSlug: 'community-garden'
-    },
-    {
-      id: '2',
-      title: 'Neighborhood Cleanup',
-      date: 'Saturday at 10:00 AM',
-      groupSlug: 'neighborhood-watch'
-    },
-    {
-      id: '3',
-      title: 'Book Club Discussion',
-      date: 'Next Tuesday at 7:30 PM',
-      groupSlug: 'book-lovers'
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setIsLoading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/auth');
+          return;
+        }
+        
+        // Get events created by the user
+        const { data: createdEvents, error: createdError } = await supabase
+          .from('group_events')
+          .select(`
+            id, 
+            title, 
+            date, 
+            time_start, 
+            time_end, 
+            location,
+            group_id,
+            groups(title, slug)
+          `)
+          .eq('created_by', user.id)
+          .order('date', { ascending: true });
+          
+        if (createdError) throw createdError;
+        
+        // Get events where user RSVPed yes or maybe
+        const { data: rsvpEvents, error: rsvpError } = await supabase
+          .from('group_event_attendance')
+          .select(`
+            event_id,
+            status,
+            group_events(
+              id, 
+              title, 
+              date, 
+              time_start, 
+              time_end, 
+              location,
+              group_id,
+              groups(title, slug)
+            )
+          `)
+          .eq('user_id', user.id)
+          .in('status', ['yes', 'maybe'])
+          .order('group_events.date', { ascending: true });
+          
+        if (rsvpError) throw rsvpError;
+        
+        // Process created events
+        const formattedCreatedEvents = createdEvents.map(event => ({
+          id: event.id,
+          title: event.title,
+          date: event.date,
+          time_start: event.time_start,
+          time_end: event.time_end,
+          location: event.location,
+          groupSlug: event.groups?.slug || '',
+          groupName: event.groups?.title || '',
+        }));
+        
+        // Process RSVP events
+        const formattedRsvpEvents = rsvpEvents
+          .filter(item => item.group_events) // Filter out any null events
+          .map(item => ({
+            id: item.group_events?.id || '',
+            title: item.group_events?.title || '',
+            date: item.group_events?.date || '',
+            time_start: item.group_events?.time_start || '',
+            time_end: item.group_events?.time_end || null,
+            location: item.group_events?.location || null,
+            groupSlug: item.group_events?.groups?.slug || '',
+            groupName: item.group_events?.groups?.title || '',
+            status: item.status
+          }));
+        
+        // Combine and deduplicate events (avoiding duplicates if user created and RSVPed to the same event)
+        const eventMap = new Map();
+        
+        // Add created events to map
+        formattedCreatedEvents.forEach(event => {
+          eventMap.set(event.id, event);
+        });
+        
+        // Add RSVP events to map (will overwrite if same ID, which is fine)
+        formattedRsvpEvents.forEach(event => {
+          if (!eventMap.has(event.id)) {
+            eventMap.set(event.id, event);
+          }
+        });
+        
+        // Convert map to array and sort by date
+        let combinedEvents = Array.from(eventMap.values());
+        combinedEvents = combinedEvents.sort((a, b) => {
+          const dateA = new Date(a.date + 'T' + a.time_start);
+          const dateB = new Date(b.date + 'T' + b.time_start);
+          return dateA.getTime() - dateB.getTime();
+        });
+        
+        setEvents(combinedEvents);
+      } catch (error: any) {
+        console.error('Error fetching events:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load events. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [navigate, toast]);
+  
+  // Function to format event date for display
+  const formatEventDate = (eventDate: string, timeStart: string) => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const date = new Date(eventDate);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return `Today at ${format(new Date(`2000-01-01T${timeStart}`), 'h:mm a')}`;
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return `Tomorrow at ${format(new Date(`2000-01-01T${timeStart}`), 'h:mm a')}`;
+    } else {
+      return `${format(date, 'MMM d')} at ${format(new Date(`2000-01-01T${timeStart}`), 'h:mm a')}`;
     }
-  ];
+  };
 
   return (
     <AppLayout>
@@ -61,12 +191,16 @@ const Calendar = () => {
               {/* Upcoming Events */}
               <Card className="bg-white border rounded-lg shadow-sm">
                 <CardHeader className="border-b pb-3">
-                  <CardTitle>Upcoming Events</CardTitle>
+                  <CardTitle>Your Events</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4">
-                  {upcomingEvents.length > 0 ? (
+                  {isLoading ? (
+                    <div className="flex justify-center items-center py-8">
+                      <Loader2 className="h-8 w-8 text-[#000080] animate-spin" />
+                    </div>
+                  ) : events.length > 0 ? (
                     <div className="space-y-4">
-                      {upcomingEvents.map((event) => (
+                      {events.map((event) => (
                         <div 
                           key={event.id} 
                           className="flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0 cursor-pointer"
@@ -77,7 +211,8 @@ const Calendar = () => {
                           </div>
                           <div className="flex-1">
                             <h3 className="font-medium text-sm">{event.title}</h3>
-                            <p className="text-sm text-gray-500">{event.date}</p>
+                            <p className="text-sm text-gray-500">{formatEventDate(event.date, event.time_start)}</p>
+                            <p className="text-xs text-gray-400 mt-1">{event.groupName}</p>
                           </div>
                           <ChevronRight className="h-4 w-4 text-gray-400 mt-2" />
                         </div>
@@ -85,7 +220,7 @@ const Calendar = () => {
                     </div>
                   ) : (
                     <p className="text-center text-gray-500 py-4">
-                      No upcoming events
+                      No upcoming events. Join a group to participate in events!
                     </p>
                   )}
                 </CardContent>
