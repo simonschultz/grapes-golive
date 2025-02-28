@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { GroupInfo } from "@/components/group/GroupInfo";
 import { GroupActionButton } from "@/components/group/GroupActionButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { NavigationFooter } from "@/components/navigation/NavigationFooter";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 interface GroupData {
   id: string;
@@ -91,38 +92,39 @@ const GroupFront = () => {
   const canEdit = userRole === 'admin' || group.created_by === currentUserId;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <GroupHeader 
-        title={group.title}
-        imageUrl={group.image_url}
-      />
-      <GroupNavigation 
-        slug={group.slug} 
-        userRole={userRole}
-      />
-      <main className="max-w-3xl mx-auto p-4 pb-24">
-        <div className="bg-white rounded-lg shadow">
-          <GroupInfo 
-            title={group.title}
-            description={group.description}
-            isPrivate={group.is_private}
-          />
-          {canEdit && (
-            <div className="p-4 border-t">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => navigate(`/groups/${slug}/settings`)}
-              >
-                Edit Group
-              </Button>
-            </div>
-          )}
-        </div>
-      </main>
-      <GroupActionButton group={group} userRole={userRole} />
-      <NavigationFooter />
-    </div>
+    <AppLayout showFooter={false}>
+      <div className="min-h-screen bg-gray-50">
+        <GroupHeader 
+          title={group.title}
+          imageUrl={group.image_url}
+        />
+        <GroupNavigation 
+          slug={group.slug} 
+          userRole={userRole}
+        />
+        <main className="max-w-3xl mx-auto p-4 pb-24">
+          <div className="bg-white rounded-lg shadow">
+            <GroupInfo 
+              title={group.title}
+              description={group.description}
+              isPrivate={group.is_private}
+            />
+            {canEdit && (
+              <div className="p-4 border-t">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate(`/groups/${slug}/settings`)}
+                >
+                  Edit Group
+                </Button>
+              </div>
+            )}
+          </div>
+        </main>
+        <GroupActionButton group={group} userRole={userRole} />
+      </div>
+    </AppLayout>
   );
 };
 

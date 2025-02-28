@@ -14,6 +14,10 @@ export const AppLayout = ({ children, showFooter = true }: AppLayoutProps) => {
   
   // Determine if we're in a group detail page
   const isGroupDetailPage = location.pathname.match(/\/groups\/[^\/]+\/[^\/]+/);
+  const isSmallScreen = window.innerWidth < 768;
+  
+  // Only show footer on small screens and if not explicitly disabled
+  const shouldShowFooter = showFooter && (isSmallScreen || !isGroupDetailPage);
   
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -24,7 +28,7 @@ export const AppLayout = ({ children, showFooter = true }: AppLayoutProps) => {
           {children}
         </main>
         
-        {showFooter && !isGroupDetailPage && <NavigationFooter />}
+        {shouldShowFooter && <NavigationFooter />}
       </div>
     </div>
   );

@@ -22,30 +22,31 @@ export const GroupNavigation = ({ slug, userRole }: GroupNavigationProps) => {
             onClick={() => navigate(`/groups/${slug}/front`)}
           >
             <Home className="h-5 w-5" />
+            <span className="sr-only md:not-sr-only md:ml-2">Home</span>
           </Button>
           <Button 
             variant="ghost" 
             className="py-4 px-3"
             onClick={() => navigate(`/groups/${slug}/chat`)}
           >
-            <MessageSquare className="h-5 w-5 mr-2" />
-            Chat
+            <MessageSquare className="h-5 w-5 md:mr-2" />
+            <span className="sr-only md:not-sr-only">Chat</span>
           </Button>
           <Button 
             variant="ghost" 
             className="py-4 px-3"
             onClick={() => navigate(`/groups/${slug}/calendar`)}
           >
-            <Calendar className="h-5 w-5 mr-2" />
-            Calendar
+            <Calendar className="h-5 w-5 md:mr-2" />
+            <span className="sr-only md:not-sr-only">Calendar</span>
           </Button>
           <Button 
             variant="ghost" 
             className="py-4 px-3"
             onClick={() => navigate(`/groups/${slug}/members`)}
           >
-            <Users className="h-5 w-5 mr-2" />
-            Members
+            <Users className="h-5 w-5 md:mr-2" />
+            <span className="sr-only md:not-sr-only">Members</span>
           </Button>
         </div>
       </div>
