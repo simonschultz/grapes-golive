@@ -113,7 +113,7 @@ const Activity = () => {
                     )}
                   </CardContent>
                 </TabsContent>
-              </TabsContent>
+              </Tabs>
             </Card>
           </div>
         </main>
