@@ -14,8 +14,8 @@ export const GroupHeader = ({ imageUrl, title }: GroupHeaderProps) => {
 
   return (
     <div className="bg-white border-b">
-      <div className="max-w-3xl mx-auto">
-        <div className="p-4">
+      <div className="max-w-full mx-auto md:max-w-none">
+        <div className="p-4 md:hidden">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
