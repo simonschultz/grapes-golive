@@ -1,10 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, ChevronRight, Loader2 } from "lucide-react";
+import { CalendarIcon, ChevronRight, Loader2, List } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +20,6 @@ interface Event {
 }
 
 const Calendar = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date());
   const navigate = useNavigate();
   const { toast } = useToast();
   const [events, setEvents] = useState<Event[]>([]);
@@ -172,60 +169,44 @@ const Calendar = () => {
         
         <main className="flex-1 p-4 md:p-6">
           <div className="max-w-3xl mx-auto">
-            <div className="grid gap-6 md:grid-cols-[1fr_300px]">
-              {/* Calendar */}
-              <Card className="bg-white border rounded-lg shadow-sm">
-                <CardHeader className="border-b pb-3">
-                  <CardTitle>Select a Date</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4 flex justify-center">
-                  <CalendarComponent
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    className="rounded-md border"
-                  />
-                </CardContent>
-              </Card>
-              
-              {/* Upcoming Events */}
-              <Card className="bg-white border rounded-lg shadow-sm">
-                <CardHeader className="border-b pb-3">
-                  <CardTitle>Your Events</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  {isLoading ? (
-                    <div className="flex justify-center items-center py-8">
-                      <Loader2 className="h-8 w-8 text-[#000080] animate-spin" />
-                    </div>
-                  ) : events.length > 0 ? (
-                    <div className="space-y-4">
-                      {events.map((event) => (
-                        <div 
-                          key={event.id} 
-                          className="flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0 cursor-pointer"
-                          onClick={() => navigate(`/groups/${event.groupSlug}/calendar/${event.id}`)}
-                        >
-                          <div className="bg-[#000080]/10 text-[#000080] rounded-full p-2 mt-1">
-                            <CalendarIcon className="h-4 w-4" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-medium text-sm">{event.title}</h3>
-                            <p className="text-sm text-gray-500">{formatEventDate(event.date, event.time_start)}</p>
-                            <p className="text-xs text-gray-400 mt-1">{event.groupName}</p>
-                          </div>
-                          <ChevronRight className="h-4 w-4 text-gray-400 mt-2" />
+            {/* Events List */}
+            <Card className="bg-white border rounded-lg shadow-sm">
+              <CardHeader className="border-b pb-4 flex flex-row items-center">
+                <List className="h-5 w-5 text-[#000080] mr-2" />
+                <CardTitle>Your Events</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4">
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-8">
+                    <Loader2 className="h-8 w-8 text-[#000080] animate-spin" />
+                  </div>
+                ) : events.length > 0 ? (
+                  <div className="space-y-4">
+                    {events.map((event) => (
+                      <div 
+                        key={event.id} 
+                        className="flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0 cursor-pointer"
+                        onClick={() => navigate(`/groups/${event.groupSlug}/calendar/${event.id}`)}
+                      >
+                        <div className="bg-[#000080]/10 text-[#000080] rounded-full p-2 mt-1">
+                          <CalendarIcon className="h-4 w-4" />
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-center text-gray-500 py-4">
-                      No upcoming events. Join a group to participate in events!
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium text-sm">{event.title}</h3>
+                          <p className="text-sm text-gray-500">{formatEventDate(event.date, event.time_start)}</p>
+                          <p className="text-xs text-gray-400 mt-1">{event.groupName}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-gray-400 mt-2" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500 py-8">
+                    No upcoming events. Join a group to participate in events!
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </main>
       </div>
