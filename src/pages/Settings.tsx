@@ -318,8 +318,17 @@ const Settings = () => {
                 </div>
               </div>
               
-              {/* Add to home screen section */}
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <Button
+                className="w-full"
+                onClick={handleSave}
+                disabled={isLoading}
+                style={{ backgroundColor: "#000080" }}
+              >
+                {isLoading ? "Saving..." : "Save changes"}
+              </Button>
+              
+              {/* Add to home screen section - Moved below Save button and above logout */}
+              <div className="bg-blue-50 p-4 rounded-lg mt-6">
                 <div className="flex items-start space-x-3">
                   <Smartphone className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div>
@@ -349,15 +358,6 @@ const Settings = () => {
                   </div>
                 </div>
               </div>
-
-              <Button
-                className="w-full"
-                onClick={handleSave}
-                disabled={isLoading}
-                style={{ backgroundColor: "#000080" }}
-              >
-                {isLoading ? "Saving..." : "Save changes"}
-              </Button>
 
               <div className="pt-4 flex flex-col items-center gap-4">
                 <Button
