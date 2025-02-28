@@ -69,7 +69,7 @@ const Calendar = () => {
                       {upcomingEvents.map((event) => (
                         <div 
                           key={event.id} 
-                          className="flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0"
+                          className="flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0 cursor-pointer"
                           onClick={() => navigate(`/groups/${event.groupSlug}/calendar/${event.id}`)}
                         >
                           <div className="bg-[#000080]/10 text-[#000080] rounded-full p-2 mt-1">
