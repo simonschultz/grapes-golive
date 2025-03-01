@@ -20,32 +20,32 @@ export const GroupNavigation = ({ slug, userRole }: GroupNavigationProps) => {
             className="py-4 md:py-6"
             onClick={() => navigate(`/groups/${slug}/front`)}
           >
-            <Home className="h-5 w-5 md:h-6 md:w-6 md:mr-3" />
-            <span className="sr-only md:not-sr-only md:text-lg">Home</span>
+            <Home className="h-5 w-5 md:h-6 md:w-6 mr-2 md:mr-3" />
+            <span className="text-sm md:text-lg">Home</span>
           </Button>
           <Button 
             variant="ghost" 
             className="py-4 md:py-6"
             onClick={() => navigate(`/groups/${slug}/chat`)}
           >
-            <MessageSquare className="h-5 w-5 md:h-6 md:w-6 md:mr-3" />
-            <span className="sr-only md:not-sr-only md:text-lg">Chat</span>
+            <MessageSquare className="h-5 w-5 md:h-6 md:w-6 mr-2 md:mr-3" />
+            <span className="text-sm md:text-lg">Chat</span>
           </Button>
           <Button 
             variant="ghost" 
             className="py-4 md:py-6"
             onClick={() => navigate(`/groups/${slug}/calendar`)}
           >
-            <Calendar className="h-5 w-5 md:h-6 md:w-6 md:mr-3" />
-            <span className="sr-only md:not-sr-only md:text-lg">Calendar</span>
+            <Calendar className="h-5 w-5 md:h-6 md:w-6 mr-2 md:mr-3" />
+            <span className="text-sm md:text-lg">Calendar</span>
           </Button>
           <Button 
             variant="ghost" 
             className="py-4 md:py-6"
             onClick={() => navigate(`/groups/${slug}/members`)}
           >
-            <Users className="h-5 w-5 md:h-6 md:w-6 md:mr-3" />
-            <span className="sr-only md:not-sr-only md:text-lg">Members</span>
+            <Users className="h-5 w-5 md:h-6 md:w-6 mr-2 md:mr-3" />
+            <span className="text-sm md:text-lg">Members</span>
           </Button>
         </div>
       </div>
