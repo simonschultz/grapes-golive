@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Settings, Shield, MessageSquare, ArrowRight, UserPlus, Calendar, Users, BellRing } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -214,7 +215,14 @@ const Front = () => {
       <div className="flex flex-col min-h-screen bg-white">
         <div className="flex-1 pb-16 md:pb-0">
           <header className="flex justify-between items-center p-4 border-b md:border-0 md:px-6 md:py-5">
-            <h1 className="text-xl font-semibold md:text-2xl md:hidden">Home</h1>
+            <div className="flex items-center md:hidden">
+              <img 
+                src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
+                alt="Grapes Logo" 
+                className="h-5 w-5 mr-2"
+              />
+              <h1 className="text-xl font-semibold">Grapes</h1>
+            </div>
             <div className="md:invisible md:h-0">
               <Button variant="ghost" size="icon" className="text-[#000080] md:hidden" onClick={() => navigate('/settings')}>
                 <Settings className="h-5 w-5" />
