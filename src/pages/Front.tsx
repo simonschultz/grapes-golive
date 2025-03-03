@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Settings, Shield, MessageSquare, ArrowRight, UserPlus, Calendar, Users, BellRing } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -79,7 +78,6 @@ const Front = () => {
           return;
         }
 
-        // Fetch site settings
         const { data: settingsData, error: settingsError } = await supabase
           .from('site_settings')
           .select('*')
@@ -89,7 +87,6 @@ const Front = () => {
           setSiteSettings(settingsData as SiteSettings);
         }
 
-        // Get notifications
         const { data: notifData, error: notifError } = await supabase
           .from('notifications')
           .select(`
@@ -105,7 +102,6 @@ const Front = () => {
         if (notifError) throw notifError;
         setNotifications(notifData as Notification[]);
 
-        // Get total count of notifications
         const { count } = await supabase
           .from('notifications')
           .select('*', { count: 'exact', head: true })
@@ -113,7 +109,6 @@ const Front = () => {
 
         setNotificationCount(count || 0);
 
-        // Check if user has any groups
         const { count: groupCount } = await supabase
           .from('group_members')
           .select('*', { count: 'exact', head: true })
@@ -122,7 +117,6 @@ const Front = () => {
 
         setHasGroups(groupCount !== null && groupCount > 0);
 
-        // Get all groups where user is an admin and get their pending requests
         const { data: adminGroups } = await supabase
           .from('group_members')
           .select(`
@@ -162,7 +156,6 @@ const Front = () => {
           setPendingRequests(requests.filter((req): req is PendingRequest => req !== null));
         }
 
-        // Get top public groups if user has no groups
         if (!groupCount || groupCount === 0) {
           const { data: topGroupsData } = await supabase.rpc('get_top_public_groups', {
             limit_count: 6
@@ -221,22 +214,17 @@ const Front = () => {
       <div className="flex flex-col min-h-screen bg-white">
         <div className="flex-1 pb-16 md:pb-0">
           <header className="flex justify-between items-center p-4 border-b md:border-0 md:px-6 md:py-5">
-            <h1 className="text-xl font-semibold md:text-2xl">Home</h1>
-            <Button variant="ghost" size="icon" className="text-[#000080] md:hidden" onClick={() => navigate('/settings')}>
-              <Settings className="h-5 w-5" />
-            </Button>
+            <h1 className="text-xl font-semibold md:text-2xl md:hidden">Home</h1>
+            <div className="md:invisible md:h-0">
+              <Button variant="ghost" size="icon" className="text-[#000080] md:hidden" onClick={() => navigate('/settings')}>
+                <Settings className="h-5 w-5" />
+              </Button>
+            </div>
           </header>
 
           <main className="flex-1 p-4 md:p-6">
             <div className="max-w-3xl mx-auto space-y-6">
               <div className="text-center space-y-4 mb-8">
-                <div className="flex justify-center mb-6">
-                  <img 
-                    src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
-                    alt="Grapes Logo" 
-                    className="w-24 h-24"
-                  />
-                </div>
                 <p className="text-gray-600">
                   {siteSettings.front_page_intro}
                 </p>
@@ -344,7 +332,6 @@ const Front = () => {
                 </div>
               )}
               
-              {/* Help text moved below the Recent Activity section */}
               <div className="text-sm text-gray-500 text-center mt-2">
                 <a href="mailto:hi@grapes.group" className="hover:text-[#000080] transition-colors">
                   Need help? We are just an e-mail away.

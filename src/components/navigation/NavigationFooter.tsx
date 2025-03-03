@@ -12,8 +12,14 @@ export const NavigationFooter = () => {
     <nav className="fixed bottom-0 left-0 right-0 border-t bg-white z-30 md:hidden">
       <div className="flex justify-around items-center h-16">
         <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/front')}>
-          <Home className="h-5 w-5 text-[#000080] fill-[#000080]" />
-          <span className="text-xs">Home</span>
+          <div className="flex items-center">
+            <img 
+              src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
+              alt="Grapes Logo" 
+              className="h-5 w-5 mr-1"
+            />
+            <span className="text-xs">Grapes</span>
+          </div>
         </Button>
         <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/groups')}>
           <Users className="h-5 w-5 text-[#000080] fill-[#000080]" />
