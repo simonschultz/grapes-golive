@@ -27,11 +27,20 @@ interface Group {
   featured?: boolean;
 }
 
+// Define an interface for the admin user
+interface AdminUser {
+  email: string;
+  id: string;
+  created_at: string;
+}
+
 const Admin = () => {
   const { toast } = useToast();
   const [isSendingEmails, setIsSendingEmails] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingGroups, setIsSavingGroups] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [settings, setSettings] = useState<SiteSettings>({
     id: '',
     front_page_intro: "Welcome. We are Grapes. Another alternative to other great group tools."
@@ -40,7 +49,41 @@ const Admin = () => {
   const [featuredGroups, setFeaturedGroups] = useState<Group[]>([]);
   const [featuredGroupIds, setFeaturedGroupIds] = useState<string[]>([]);
 
+  // Check if current user is an admin
   useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user && user.email) {
+          setCurrentUserEmail(user.email);
+          
+          // Check if user is in admin_users table
+          const { data: adminUser, error } = await supabase
+            .from('admin_users')
+            .select('*')
+            .eq('email', user.email)
+            .maybeSingle();
+            
+          if (error) {
+            console.error('Error checking admin status:', error);
+            return;
+          }
+          
+          setIsAdmin(!!adminUser);
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+      }
+    };
+    
+    checkAdminStatus();
+  }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    
     const fetchSettings = async () => {
       try {
         // Use maybeSingle instead of single to avoid errors if no record is found
@@ -80,7 +123,10 @@ const Admin = () => {
         let featuredIds: string[] = [];
         if (adminSettings?.value) {
           // Check if value is an object with group_ids property
-          const valueObj = adminSettings.value as Record<string, any>;
+          const valueObj = typeof adminSettings.value === 'string' 
+            ? JSON.parse(adminSettings.value) 
+            : adminSettings.value as Record<string, any>;
+            
           featuredIds = Array.isArray(valueObj.group_ids) ? valueObj.group_ids : [];
         }
         
@@ -115,11 +161,22 @@ const Admin = () => {
       }
     };
 
-    fetchSettings();
-    fetchFeaturedGroups();
-  }, []);
+    if (isAdmin) {
+      fetchSettings();
+      fetchFeaturedGroups();
+    }
+  }, [isAdmin]);
 
   const handleTestEmailDigest = async () => {
+    if (!isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You must be an admin to perform this action",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       setIsSendingEmails(true);
       const { error } = await supabase.functions.invoke('send-activity-emails');
@@ -142,6 +199,15 @@ const Admin = () => {
   };
 
   const saveSettings = async () => {
+    if (!isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You must be an admin to perform this action",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       setIsSaving(true);
 
@@ -228,9 +294,19 @@ const Admin = () => {
   };
 
   const saveFeaturedGroups = async () => {
+    if (!isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You must be an admin to perform this action",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       setIsSavingGroups(true);
       console.log("Saving featured groups:", featuredGroupIds);
+      console.log("Current user email:", currentUserEmail);
 
       // Check if any admin settings entry with key 'featured_groups' exists
       const { data: existingSettings, error: checkError } = await supabase
@@ -295,6 +371,36 @@ const Admin = () => {
       setIsSavingGroups(false);
     }
   };
+
+  if (!isAdmin) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <header className="flex justify-between items-center p-4 border-b bg-white">
+          <div className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
+              alt="Grapes Logo" 
+              className="w-8 h-8"
+            />
+            <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+          </div>
+        </header>
+        <main className="max-w-3xl mx-auto px-4 py-6 flex-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>Access Denied</CardTitle>
+              <CardDescription>
+                You must be an admin to view this page.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>Please contact an administrator if you believe you should have access.</p>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
