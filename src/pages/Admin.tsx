@@ -230,18 +230,51 @@ const Admin = () => {
   const saveFeaturedGroups = async () => {
     try {
       setIsSavingGroups(true);
+      console.log("Saving featured groups:", featuredGroupIds);
 
-      // Save to admin_settings table
-      const { error } = await supabase
+      // Check if any admin settings entry with key 'featured_groups' exists
+      const { data: existingSettings, error: checkError } = await supabase
         .from('admin_settings')
-        .upsert({
-          key: 'featured_groups',
-          value: { group_ids: featuredGroupIds },
-          updated_at: new Date().toISOString()
-        })
-        .select();
+        .select('*')
+        .eq('key', 'featured_groups')
+        .maybeSingle();
+      
+      if (checkError) {
+        console.error('Error checking admin settings:', checkError);
+        throw checkError;
+      }
+      
+      let upsertError;
+      // Insert or update based on whether the setting already exists
+      if (existingSettings) {
+        // Update existing setting
+        console.log("Updating existing featured groups setting");
+        const { error } = await supabase
+          .from('admin_settings')
+          .update({
+            value: { group_ids: featuredGroupIds },
+            updated_at: new Date().toISOString()
+          })
+          .eq('key', 'featured_groups');
+          
+        upsertError = error;
+      } else {
+        // Insert new setting
+        console.log("Creating new featured groups setting");
+        const { error } = await supabase
+          .from('admin_settings')
+          .insert({
+            key: 'featured_groups',
+            value: { group_ids: featuredGroupIds }
+          });
+          
+        upsertError = error;
+      }
 
-      if (error) throw error;
+      if (upsertError) {
+        console.error('Error saving featured groups:', upsertError);
+        throw upsertError;
+      }
 
       // Update featuredGroups array for display
       const featured = publicGroups.filter(group => featuredGroupIds.includes(group.id));
