@@ -198,14 +198,14 @@ const Group = () => {
           title={group.title}
           imageUrl={group.image_url}
         />
-        <main className="max-w-3xl mx-auto px-3 sm:px-4">
+        <main className="max-w-full md:max-w-3xl mx-auto px-2 sm:px-4">
           <div className="bg-white rounded-lg shadow">
             <GroupInfo 
               title={group.title}
               description={group.description}
               isPrivate={group.is_private}
             />
-            <div className="p-4 border-t">
+            <div className="p-3 sm:p-4 border-t">
               <Button
                 className="w-full"
                 onClick={handleGroupAction}

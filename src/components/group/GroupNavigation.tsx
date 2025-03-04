@@ -13,39 +13,39 @@ export const GroupNavigation = ({ slug, userRole }: GroupNavigationProps) => {
 
   return (
     <nav className="bg-white border-b sticky top-0 z-10">
-      <div className="max-w-3xl mx-auto px-4 md:px-4">
+      <div className="max-w-full md:max-w-3xl mx-auto px-1 sm:px-4">
         <div className="flex justify-between">
           <Button 
             variant="ghost" 
-            className="py-4 md:py-6"
+            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2"
             onClick={() => navigate(`/groups/${slug}/front`)}
           >
-            <Home className="h-5 w-5 md:h-6 md:w-6 mr-2 md:mr-3" />
-            <span className="text-sm md:text-lg">Home</span>
+            <Home className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1 sm:mr-2 md:mr-3" />
+            <span className="text-xs sm:text-sm md:text-base">Home</span>
           </Button>
           <Button 
             variant="ghost" 
-            className="py-4 md:py-6"
+            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2"
             onClick={() => navigate(`/groups/${slug}/chat`)}
           >
-            <MessageSquare className="h-5 w-5 md:h-6 md:w-6 mr-2 md:mr-3" />
-            <span className="text-sm md:text-lg">Chat</span>
+            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1 sm:mr-2 md:mr-3" />
+            <span className="text-xs sm:text-sm md:text-base">Chat</span>
           </Button>
           <Button 
             variant="ghost" 
-            className="py-4 md:py-6"
+            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2"
             onClick={() => navigate(`/groups/${slug}/calendar`)}
           >
-            <Calendar className="h-5 w-5 md:h-6 md:w-6 mr-2 md:mr-3" />
-            <span className="text-sm md:text-lg">Calendar</span>
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1 sm:mr-2 md:mr-3" />
+            <span className="text-xs sm:text-sm md:text-base">Calendar</span>
           </Button>
           <Button 
             variant="ghost" 
-            className="py-4 md:py-6"
+            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2"
             onClick={() => navigate(`/groups/${slug}/members`)}
           >
-            <Users className="h-5 w-5 md:h-6 md:w-6 mr-2 md:mr-3" />
-            <span className="text-sm md:text-lg">Members</span>
+            <Users className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1 sm:mr-2 md:mr-3" />
+            <span className="text-xs sm:text-sm md:text-base">Members</span>
           </Button>
         </div>
       </div>

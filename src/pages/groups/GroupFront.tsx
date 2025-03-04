@@ -102,7 +102,7 @@ const GroupFront = () => {
           slug={group.slug} 
           userRole={userRole}
         />
-        <main className="max-w-3xl mx-auto px-3 sm:px-4 pb-24">
+        <main className="max-w-full md:max-w-3xl mx-auto px-2 sm:px-4 pb-24">
           <div className="bg-white rounded-lg shadow">
             <GroupInfo 
               title={group.title}
@@ -110,7 +110,7 @@ const GroupFront = () => {
               isPrivate={group.is_private}
             />
             {canEdit && (
-              <div className="p-4 border-t">
+              <div className="p-3 sm:p-4 border-t">
                 <Button
                   variant="outline"
                   className="w-full"
