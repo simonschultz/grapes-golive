@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Settings, Shield, MessageSquare, ArrowRight, UserPlus, Calendar, Users, BellRing } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -52,7 +51,7 @@ const Front = () => {
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
-  const [topGroups, setTopGroups] = useState<TopGroup[]>([]);
+  const [featuredGroups, setFeaturedGroups] = useState<TopGroup[]>([]);
   const [hasGroups, setHasGroups] = useState(false);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>({
     id: '',
@@ -158,11 +157,48 @@ const Front = () => {
         }
 
         if (!groupCount || groupCount === 0) {
-          const { data: topGroupsData } = await supabase.rpc('get_top_public_groups', {
-            limit_count: 6
-          });
-          if (topGroupsData) {
-            setTopGroups(topGroupsData);
+          const { data: adminSettings } = await supabase
+            .from('admin_settings')
+            .select('value')
+            .eq('key', 'featured_groups')
+            .maybeSingle();
+          
+          let featuredGroupIds: string[] = [];
+          if (adminSettings?.value) {
+            const valueObj = typeof adminSettings.value === 'string' 
+              ? JSON.parse(adminSettings.value) 
+              : adminSettings.value as Record<string, any>;
+              
+            featuredGroupIds = Array.isArray(valueObj.group_ids) ? valueObj.group_ids : [];
+          }
+          
+          if (featuredGroupIds.length > 0) {
+            const { data: featuredGroupsData } = await supabase
+              .from('public_groups_with_counts')
+              .select('id, title, slug, image_url, member_count')
+              .in('id', featuredGroupIds);
+            
+            if (featuredGroupsData && featuredGroupsData.length > 0) {
+              const sortedGroups = featuredGroupIds.map(id => 
+                featuredGroupsData.find(group => group.id === id)
+              ).filter(Boolean) as TopGroup[];
+              
+              setFeaturedGroups(sortedGroups);
+            } else {
+              const { data: topGroupsData } = await supabase.rpc('get_top_public_groups', {
+                limit_count: 6
+              });
+              if (topGroupsData) {
+                setFeaturedGroups(topGroupsData);
+              }
+            }
+          } else {
+            const { data: topGroupsData } = await supabase.rpc('get_top_public_groups', {
+              limit_count: 6
+            });
+            if (topGroupsData) {
+              setFeaturedGroups(topGroupsData);
+            }
           }
         }
 
@@ -246,11 +282,11 @@ const Front = () => {
                 </div>
               </div>
 
-              {!hasGroups && topGroups.length > 0 && (
+              {!hasGroups && featuredGroups.length > 0 && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium text-center text-gray-900">Some inspiration</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {topGroups.map((group) => (
+                    {featuredGroups.map((group) => (
                       <div 
                         key={group.id} 
                         className="flex flex-col items-center cursor-pointer"
