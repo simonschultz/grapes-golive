@@ -158,19 +158,21 @@ const Front = () => {
         }
 
         if (!groupCount || groupCount === 0) {
-          // First try to get featured groups from admin settings
-          const { data: adminSettings } = await supabase
+          // Try to get featured groups from admin settings
+          const { data: adminSettings, error: adminError } = await supabase
             .from('admin_settings')
             .select('value')
             .eq('key', 'featured_groups')
             .maybeSingle();
+          
+          console.log('Admin settings:', adminSettings, 'Error:', adminError);
           
           let featuredGroupIds: string[] = [];
           if (adminSettings?.value) {
             // Handle both string and object format
             const valueObj = typeof adminSettings.value === 'string' 
               ? JSON.parse(adminSettings.value) 
-              : adminSettings.value as Record<string, any>;
+              : adminSettings.value;
               
             featuredGroupIds = Array.isArray(valueObj.group_ids) ? valueObj.group_ids : [];
           }
@@ -187,9 +189,10 @@ const Front = () => {
             console.log('Featured groups data:', featuredGroupsData, 'Error:', error);
             
             if (featuredGroupsData && featuredGroupsData.length > 0) {
-              // Order the groups based on the original featuredGroupIds order
+              // Create a map for quick lookups, then order based on the original featuredGroupIds order
+              const groupMap = new Map(featuredGroupsData.map(group => [group.id, group]));
               const sortedGroups = featuredGroupIds
-                .map(id => featuredGroupsData.find(group => group.id === id))
+                .map(id => groupMap.get(id))
                 .filter(Boolean) as TopGroup[];
               
               console.log('Sorted featured groups:', sortedGroups);
@@ -310,7 +313,7 @@ const Front = () => {
                           {group.image_url ? (
                             <img
                               src={group.image_url.startsWith('group-images/') 
-                                ? supabase.storage.from('group-images').getPublicUrl(group.image_url).data.publicUrl
+                                ? supabase.storage.from('group-images').getPublicUrl(group.image_url.replace('group-images/', '')).data.publicUrl
                                 : group.image_url}
                               alt={group.title}
                               className="w-full h-full object-cover"
