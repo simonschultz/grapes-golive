@@ -120,9 +120,20 @@ const GroupFront = () => {
                 </Button>
               </div>
             )}
+            
+            {userRole && (
+              <div className="p-3 sm:p-4 border-t">
+                <GroupActionButton 
+                  group={group} 
+                  userRole={userRole} 
+                  showInline={true} 
+                />
+              </div>
+            )}
           </div>
         </main>
-        <GroupActionButton group={group} userRole={userRole} />
+        
+        {!userRole && <GroupActionButton group={group} userRole={userRole} />}
       </div>
     </AppLayout>
   );
