@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface SiteSettings {
   id: string;
@@ -16,14 +17,28 @@ interface SiteSettings {
   updated_at?: string;
 }
 
+interface Group {
+  id: string;
+  title: string;
+  slug: string;
+  image_url: string | null;
+  is_private: boolean;
+  member_count: number;
+  featured?: boolean;
+}
+
 const Admin = () => {
   const { toast } = useToast();
   const [isSendingEmails, setIsSendingEmails] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingGroups, setIsSavingGroups] = useState(false);
   const [settings, setSettings] = useState<SiteSettings>({
     id: '',
     front_page_intro: "Welcome. We are Grapes. Another alternative to other great group tools."
   });
+  const [publicGroups, setPublicGroups] = useState<Group[]>([]);
+  const [featuredGroups, setFeaturedGroups] = useState<Group[]>([]);
+  const [featuredGroupIds, setFeaturedGroupIds] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -47,7 +62,54 @@ const Admin = () => {
       }
     };
 
+    const fetchFeaturedGroups = async () => {
+      try {
+        // Fetch the admin_settings to get featured group IDs
+        const { data: adminSettings, error: settingsError } = await supabase
+          .from('admin_settings')
+          .select('*')
+          .eq('key', 'featured_groups')
+          .maybeSingle();
+
+        if (settingsError) {
+          console.error('Error fetching featured groups setting:', settingsError);
+          return;
+        }
+
+        const featuredIds = adminSettings?.value?.group_ids || [];
+        setFeaturedGroupIds(featuredIds);
+
+        // Fetch all public groups
+        const { data: groups, error: groupsError } = await supabase
+          .from('public_groups_with_counts')
+          .select('*')
+          .eq('is_private', false);
+
+        if (groupsError) {
+          console.error('Error fetching public groups:', groupsError);
+          return;
+        }
+
+        if (groups) {
+          // Mark featured groups
+          const mappedGroups = groups.map(group => ({
+            ...group,
+            featured: featuredIds.includes(group.id)
+          }));
+          
+          setPublicGroups(mappedGroups);
+          
+          // Filter featured groups
+          const featured = mappedGroups.filter(group => featuredIds.includes(group.id));
+          setFeaturedGroups(featured);
+        }
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+      }
+    };
+
     fetchSettings();
+    fetchFeaturedGroups();
   }, []);
 
   const handleTestEmailDigest = async () => {
@@ -127,6 +189,73 @@ const Admin = () => {
     }
   };
 
+  const toggleGroupFeatured = (groupId: string) => {
+    // Check if we already have 6 featured groups and this would add a 7th
+    if (!featuredGroupIds.includes(groupId) && featuredGroupIds.length >= 6) {
+      toast({
+        title: "Limit Reached",
+        description: "You can only feature up to 6 groups",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Toggle the group in the featuredGroupIds array
+    setFeaturedGroupIds(prev => {
+      if (prev.includes(groupId)) {
+        return prev.filter(id => id !== groupId);
+      } else {
+        return [...prev, groupId];
+      }
+    });
+
+    // Update the publicGroups state to reflect the change
+    setPublicGroups(prev => 
+      prev.map(group => {
+        if (group.id === groupId) {
+          return { ...group, featured: !group.featured };
+        }
+        return group;
+      })
+    );
+  };
+
+  const saveFeaturedGroups = async () => {
+    try {
+      setIsSavingGroups(true);
+
+      // Save to admin_settings table
+      const { error } = await supabase
+        .from('admin_settings')
+        .upsert({
+          key: 'featured_groups',
+          value: { group_ids: featuredGroupIds },
+          updated_at: new Date().toISOString()
+        })
+        .select();
+
+      if (error) throw error;
+
+      // Update featuredGroups array for display
+      const featured = publicGroups.filter(group => featuredGroupIds.includes(group.id));
+      setFeaturedGroups(featured);
+
+      toast({
+        title: "Success",
+        description: "Featured groups have been updated",
+      });
+    } catch (error: any) {
+      console.error('Error saving featured groups:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save featured groups",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingGroups(false);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <header className="flex justify-between items-center p-4 border-b bg-white">
@@ -144,6 +273,7 @@ const Admin = () => {
         <Tabs defaultValue="content">
           <TabsList className="mb-6">
             <TabsTrigger value="content">Content</TabsTrigger>
+            <TabsTrigger value="featured">Featured Groups</TabsTrigger>
             <TabsTrigger value="email">Email Settings</TabsTrigger>
           </TabsList>
           
@@ -174,6 +304,116 @@ const Admin = () => {
                   style={{ backgroundColor: "#000080" }}
                 >
                   {isSaving ? "Saving..." : "Save Changes"}
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="featured">
+            <Card>
+              <CardHeader>
+                <CardTitle>Featured Groups</CardTitle>
+                <CardDescription>
+                  Select up to 6 public groups to feature on your site
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Currently Featured ({featuredGroups.length}/6)</h3>
+                    {featuredGroups.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        {featuredGroups.map(group => (
+                          <div key={group.id} className="flex items-center gap-3 p-3 border rounded-md">
+                            <div className="flex-shrink-0 h-10 w-10 rounded-md overflow-hidden">
+                              {group.image_url ? (
+                                <img 
+                                  src={group.image_url} 
+                                  alt={group.title} 
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+                                  <span className="text-xs text-gray-500">No img</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{group.title}</p>
+                              <p className="text-xs text-gray-500">{group.member_count} members</p>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => toggleGroupFeatured(group.id)}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 mb-6">No featured groups selected</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">All Public Groups</h3>
+                    <div className="border rounded-md overflow-hidden">
+                      <div className="max-h-[400px] overflow-y-auto">
+                        <table className="w-full text-left">
+                          <thead className="bg-gray-50 border-b">
+                            <tr>
+                              <th className="px-4 py-2 text-xs font-medium text-gray-500">Featured</th>
+                              <th className="px-4 py-2 text-xs font-medium text-gray-500">Group</th>
+                              <th className="px-4 py-2 text-xs font-medium text-gray-500">Members</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {publicGroups.map(group => (
+                              <tr key={group.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-2">
+                                  <Checkbox 
+                                    checked={!!group.featured}
+                                    onCheckedChange={() => toggleGroupFeatured(group.id)}
+                                    disabled={!group.featured && featuredGroupIds.length >= 6}
+                                  />
+                                </td>
+                                <td className="px-4 py-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-8 w-8 rounded overflow-hidden flex-shrink-0">
+                                      {group.image_url ? (
+                                        <img 
+                                          src={group.image_url} 
+                                          alt={group.title} 
+                                          className="h-full w-full object-cover"
+                                        />
+                                      ) : (
+                                        <div className="h-full w-full bg-gray-200"></div>
+                                      )}
+                                    </div>
+                                    <span className="text-sm font-medium">{group.title}</span>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-2 text-sm text-gray-500">
+                                  {group.member_count}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  onClick={saveFeaturedGroups} 
+                  disabled={isSavingGroups}
+                  style={{ backgroundColor: "#000080" }}
+                >
+                  {isSavingGroups ? "Saving..." : "Save Featured Groups"}
                 </Button>
               </CardFooter>
             </Card>
