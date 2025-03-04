@@ -52,7 +52,7 @@ const Front = () => {
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
-  const [featuredGroups, setFeaturedGroups] = useState<TopGroup[]>([]);
+  const [topGroups, setTopGroups] = useState<TopGroup[]>([]);
   const [hasGroups, setHasGroups] = useState(false);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>({
     id: '',
@@ -158,64 +158,11 @@ const Front = () => {
         }
 
         if (!groupCount || groupCount === 0) {
-          // Try to get featured groups from admin settings
-          const { data: adminSettings, error: adminError } = await supabase
-            .from('admin_settings')
-            .select('value')
-            .eq('key', 'featured_groups')
-            .maybeSingle();
-          
-          console.log('Admin settings:', adminSettings, 'Error:', adminError);
-          
-          let featuredGroupIds: string[] = [];
-          if (adminSettings?.value) {
-            // Handle both string and object format
-            const valueObj = typeof adminSettings.value === 'string' 
-              ? JSON.parse(adminSettings.value) 
-              : adminSettings.value;
-              
-            featuredGroupIds = Array.isArray(valueObj.group_ids) ? valueObj.group_ids : [];
-          }
-          
-          console.log('Featured group IDs from admin settings:', featuredGroupIds);
-          
-          if (featuredGroupIds.length > 0) {
-            // Get the actual group data for featured groups
-            const { data: featuredGroupsData, error } = await supabase
-              .from('public_groups_with_counts')
-              .select('id, title, slug, image_url, member_count')
-              .in('id', featuredGroupIds);
-            
-            console.log('Featured groups data:', featuredGroupsData, 'Error:', error);
-            
-            if (featuredGroupsData && featuredGroupsData.length > 0) {
-              // Create a map for quick lookups, then order based on the original featuredGroupIds order
-              const groupMap = new Map(featuredGroupsData.map(group => [group.id, group]));
-              const sortedGroups = featuredGroupIds
-                .map(id => groupMap.get(id))
-                .filter(Boolean) as TopGroup[];
-              
-              console.log('Sorted featured groups:', sortedGroups);
-              setFeaturedGroups(sortedGroups);
-            } else {
-              // Fallback to random groups if no featured groups found
-              console.log('No featured groups found, falling back to random');
-              const { data: topGroupsData } = await supabase.rpc('get_top_public_groups', {
-                limit_count: 6
-              });
-              if (topGroupsData) {
-                setFeaturedGroups(topGroupsData);
-              }
-            }
-          } else {
-            // If no featured groups are set, use random groups
-            console.log('No featured group IDs found, using random groups');
-            const { data: topGroupsData } = await supabase.rpc('get_top_public_groups', {
-                limit_count: 6
-              });
-            if (topGroupsData) {
-              setFeaturedGroups(topGroupsData);
-            }
+          const { data: topGroupsData } = await supabase.rpc('get_top_public_groups', {
+            limit_count: 6
+          });
+          if (topGroupsData) {
+            setTopGroups(topGroupsData);
           }
         }
 
@@ -299,11 +246,11 @@ const Front = () => {
                 </div>
               </div>
 
-              {!hasGroups && featuredGroups.length > 0 && (
+              {!hasGroups && topGroups.length > 0 && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium text-center text-gray-900">Some inspiration</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {featuredGroups.map((group) => (
+                    {topGroups.map((group) => (
                       <div 
                         key={group.id} 
                         className="flex flex-col items-center cursor-pointer"
@@ -312,9 +259,7 @@ const Front = () => {
                         <div className="w-full aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-100 mb-2">
                           {group.image_url ? (
                             <img
-                              src={group.image_url.startsWith('group-images/') 
-                                ? supabase.storage.from('group-images').getPublicUrl(group.image_url.replace('group-images/', '')).data.publicUrl
-                                : group.image_url}
+                              src={supabase.storage.from('group-images').getPublicUrl(group.image_url).data.publicUrl}
                               alt={group.title}
                               className="w-full h-full object-cover"
                             />
