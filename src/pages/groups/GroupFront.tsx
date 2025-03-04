@@ -1,12 +1,11 @@
 
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { GroupHeader } from "@/components/group/GroupHeader";
 import { GroupNavigation } from "@/components/group/GroupNavigation";
 import { GroupInfo } from "@/components/group/GroupInfo";
 import { GroupActionButton } from "@/components/group/GroupActionButton";
-import { GroupCreatedOverlay } from "@/components/group/GroupCreatedOverlay";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -25,26 +24,10 @@ const GroupFront = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const location = useLocation();
   const [group, setGroup] = useState<GroupData | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [showCreatedOverlay, setShowCreatedOverlay] = useState(false);
-  const [showShareDialog, setShowShareDialog] = useState(false);
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const hasCreatedParam = searchParams.get('created') === 'true';
-    
-    if (hasCreatedParam) {
-      setShowCreatedOverlay(true);
-      
-      // Remove the query parameter without refreshing the page
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-    }
-  }, [location]);
 
   useEffect(() => {
     const fetchGroupData = async () => {
@@ -96,23 +79,6 @@ const GroupFront = () => {
     fetchGroupData();
   }, [slug, navigate, toast]);
 
-  const handleCopyLink = () => {
-    if (!group) return;
-    
-    const groupUrl = `${window.location.origin}/groups/${group.slug}`;
-    navigator.clipboard.writeText(groupUrl);
-    toast({
-      title: "Link copied",
-      description: "Group link has been copied to your clipboard",
-    });
-    setShowShareDialog(false);
-  };
-
-  const handleShareButtonClick = () => {
-    setShowShareDialog(true);
-    setShowCreatedOverlay(false);
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -161,7 +127,6 @@ const GroupFront = () => {
                   group={group} 
                   userRole={userRole} 
                   showInline={true} 
-                  onShareClick={() => setShowShareDialog(true)}
                 />
               </div>
             )}
@@ -169,14 +134,6 @@ const GroupFront = () => {
         </main>
         
         {!userRole && <GroupActionButton group={group} userRole={userRole} />}
-        
-        {/* Success Overlay */}
-        <GroupCreatedOverlay 
-          isOpen={showCreatedOverlay}
-          onClose={() => setShowCreatedOverlay(false)}
-          onShare={handleShareButtonClick}
-          isPrivate={group.is_private}
-        />
       </div>
     </AppLayout>
   );

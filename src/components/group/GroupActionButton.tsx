@@ -21,10 +21,9 @@ interface GroupActionButtonProps {
   };
   userRole: string | null;
   showInline?: boolean;
-  onShareClick?: () => void;
 }
 
-export const GroupActionButton = ({ group, userRole, showInline = false, onShareClick }: GroupActionButtonProps) => {
+export const GroupActionButton = ({ group, userRole, showInline = false }: GroupActionButtonProps) => {
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const navigate = useNavigate();
@@ -105,21 +104,13 @@ export const GroupActionButton = ({ group, userRole, showInline = false, onShare
     setIsShareDialogOpen(false);
   };
 
-  const handleShareClick = () => {
-    if (onShareClick) {
-      onShareClick();
-    } else {
-      setIsShareDialogOpen(true);
-    }
-  };
-
   if (userRole) {
     return (
       <>
         {showInline ? (
           <div className="flex flex-col items-center gap-3 mt-6 mb-8">
             <Button
-              onClick={handleShareClick}
+              onClick={() => setIsShareDialogOpen(true)}
               className="bg-[#000080] hover:bg-[#000060] text-white w-full max-w-xs"
             >
               Share group
@@ -134,7 +125,7 @@ export const GroupActionButton = ({ group, userRole, showInline = false, onShare
         ) : (
           <div className="fixed bottom-20 left-0 right-0 flex justify-center gap-6">
             <button
-              onClick={handleShareClick}
+              onClick={() => setIsShareDialogOpen(true)}
               className={cn(
                 "text-[#221F26] hover:text-[#000080] transition-colors",
                 "font-medium text-sm"
