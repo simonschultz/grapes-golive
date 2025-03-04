@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Settings, Shield, MessageSquare, ArrowRight, UserPlus, Calendar, Users, BellRing } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -157,6 +158,7 @@ const Front = () => {
         }
 
         if (!groupCount || groupCount === 0) {
+          // First try to get featured groups from admin settings
           const { data: adminSettings } = await supabase
             .from('admin_settings')
             .select('value')
@@ -165,6 +167,7 @@ const Front = () => {
           
           let featuredGroupIds: string[] = [];
           if (adminSettings?.value) {
+            // Handle both string and object format
             const valueObj = typeof adminSettings.value === 'string' 
               ? JSON.parse(adminSettings.value) 
               : adminSettings.value as Record<string, any>;
@@ -172,19 +175,28 @@ const Front = () => {
             featuredGroupIds = Array.isArray(valueObj.group_ids) ? valueObj.group_ids : [];
           }
           
+          console.log('Featured group IDs from admin settings:', featuredGroupIds);
+          
           if (featuredGroupIds.length > 0) {
-            const { data: featuredGroupsData } = await supabase
+            // Get the actual group data for featured groups
+            const { data: featuredGroupsData, error } = await supabase
               .from('public_groups_with_counts')
               .select('id, title, slug, image_url, member_count')
               .in('id', featuredGroupIds);
             
+            console.log('Featured groups data:', featuredGroupsData, 'Error:', error);
+            
             if (featuredGroupsData && featuredGroupsData.length > 0) {
-              const sortedGroups = featuredGroupIds.map(id => 
-                featuredGroupsData.find(group => group.id === id)
-              ).filter(Boolean) as TopGroup[];
+              // Order the groups based on the original featuredGroupIds order
+              const sortedGroups = featuredGroupIds
+                .map(id => featuredGroupsData.find(group => group.id === id))
+                .filter(Boolean) as TopGroup[];
               
+              console.log('Sorted featured groups:', sortedGroups);
               setFeaturedGroups(sortedGroups);
             } else {
+              // Fallback to random groups if no featured groups found
+              console.log('No featured groups found, falling back to random');
               const { data: topGroupsData } = await supabase.rpc('get_top_public_groups', {
                 limit_count: 6
               });
@@ -193,9 +205,11 @@ const Front = () => {
               }
             }
           } else {
+            // If no featured groups are set, use random groups
+            console.log('No featured group IDs found, using random groups');
             const { data: topGroupsData } = await supabase.rpc('get_top_public_groups', {
-              limit_count: 6
-            });
+                limit_count: 6
+              });
             if (topGroupsData) {
               setFeaturedGroups(topGroupsData);
             }
@@ -295,7 +309,9 @@ const Front = () => {
                         <div className="w-full aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-100 mb-2">
                           {group.image_url ? (
                             <img
-                              src={supabase.storage.from('group-images').getPublicUrl(group.image_url).data.publicUrl}
+                              src={group.image_url.startsWith('group-images/') 
+                                ? supabase.storage.from('group-images').getPublicUrl(group.image_url).data.publicUrl
+                                : group.image_url}
                               alt={group.title}
                               className="w-full h-full object-cover"
                             />
