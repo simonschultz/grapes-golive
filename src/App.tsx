@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -119,12 +118,67 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const GroupRouteGuard = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
   const { slug } = useParams();
+  const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [isMember, setIsMember] = useState(false);
 
+  useEffect(() => {
+    const checkAuthAndMembership = async () => {
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      const isAuthenticated = !!user;
+      setAuthenticated(isAuthenticated);
+
+      // If user is authenticated, check if they are a member of the group
+      if (isAuthenticated && slug) {
+        const { data: membership, error } = await supabase
+          .from('group_members')
+          .select('role')
+          .eq('group_id', 
+            supabase.rpc('get_group_id_from_slug', { slug_param: slug })
+          )
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error checking group membership:", error);
+        }
+
+        setIsMember(!!membership && ['admin', 'member'].includes(membership.role));
+      }
+
+      setLoading(false);
+    };
+
+    checkAuthAndMembership();
+  }, [slug]);
+
+  if (loading) {
+    return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+  }
+
+  // If this is the base group page (/groups/slug), always allow access
   if (pathname === `/groups/${slug}`) {
     return <>{children}</>;
   }
 
-  return <Navigate to={`/groups/${slug}`} replace />;
+  // If user is not authenticated, redirect to the base group page
+  if (!authenticated) {
+    return <Navigate to={`/groups/${slug}`} replace />;
+  }
+
+  // If user is authenticated but not a member, redirect to the base group page
+  if (authenticated && !isMember) {
+    return <Navigate to={`/groups/${slug}`} replace />;
+  }
+
+  // If user is authenticated and a member, redirect to the front page of the group
+  if (authenticated && isMember && pathname === `/groups/${slug}`) {
+    return <Navigate to={`/groups/${slug}/front`} replace />;
+  }
+
+  // Otherwise, render the children (allow access to the protected group pages)
+  return <>{children}</>;
 };
 
 const App = () => {
@@ -157,7 +211,7 @@ const App = () => {
         <Route path="/groups/join" element={<ProtectedRoute><Join /></ProtectedRoute>} />
         
         <Route path="groups/:slug">
-          <Route index element={<GroupRouteGuard><Group /></GroupRouteGuard>} />
+          <Route index element={<Group />} />
           <Route path="front" element={<ProtectedRoute><GroupFront /></ProtectedRoute>} />
           <Route path="chat" element={<ProtectedRoute><GroupChat /></ProtectedRoute>} />
           <Route path="calendar" element={<ProtectedRoute><GroupCalendar /></ProtectedRoute>} />
@@ -165,7 +219,7 @@ const App = () => {
           <Route path="calendar/:id" element={<ProtectedRoute><GroupEventOverview /></ProtectedRoute>} />
           <Route path="members" element={<ProtectedRoute><GroupMembers /></ProtectedRoute>} />
           <Route path="settings" element={<ProtectedRoute><GroupEdit /></ProtectedRoute>} />
-          <Route path="*" element={<GroupRouteGuard><Group /></GroupRouteGuard>} />
+          <Route path="*" element={<Navigate to="." replace />} />
         </Route>
 
         <Route path="/" element={<Index />} />
