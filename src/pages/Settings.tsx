@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -241,163 +242,165 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="flex justify-between items-center p-4 border-b">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-xl font-semibold">Settings</h1>
-        </div>
-      </header>
-
-      <main className="flex-1 p-4">
-        <div className="max-w-md mx-auto space-y-6">
-          <div className="flex flex-col items-center space-y-4">
-            <Avatar className="w-24 h-24">
-              <AvatarImage src={avatarUrl || ""} />
-              <AvatarFallback>
-                {firstName ? firstName[0]?.toUpperCase() : "?"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex items-center">
-              <Label
-                htmlFor="picture"
-                className="cursor-pointer flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-              >
-                <Input
-                  id="picture"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                  disabled={isLoading}
-                />
-                <Upload className="w-4 h-4" />
-                Change profile picture
-              </Label>
-            </div>
+    <AppLayout showFooter={false}>
+      <div className="min-h-screen bg-white flex flex-col">
+        <header className="flex justify-between items-center p-4 border-b md:px-6 md:py-5">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="md:hidden">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl font-semibold md:text-2xl">Settings</h1>
           </div>
+        </header>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First name</Label>
-              <Input
-                id="firstName"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Enter your first name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last name</Label>
-              <Input
-                id="lastName"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Enter your last name"
-              />
-            </div>
-
-            <div className="bg-sky-100 p-4 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="acceptEmail"
-                  checked={acceptEmail}
-                  onCheckedChange={(checked) => setAcceptEmail(checked as boolean)}
-                />
+        <main className="flex-1 p-4 md:p-6">
+          <div className="max-w-md mx-auto space-y-6">
+            <div className="flex flex-col items-center space-y-4">
+              <Avatar className="w-24 h-24">
+                <AvatarImage src={avatarUrl || ""} />
+                <AvatarFallback>
+                  {firstName ? firstName[0]?.toUpperCase() : "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex items-center">
                 <Label
-                  htmlFor="acceptEmail"
-                  className="text-sm text-gray-700"
+                  htmlFor="picture"
+                  className="cursor-pointer flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
                 >
-                  Yes, please send occasional updates on my groups' activities.
+                  <Input
+                    id="picture"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                    disabled={isLoading}
+                  />
+                  <Upload className="w-4 h-4" />
+                  Change profile picture
                 </Label>
               </div>
             </div>
-            
-            {/* Add to home screen section */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="flex items-start space-x-3">
-                <Smartphone className="w-5 h-5 text-blue-600 mt-0.5" />
-                <div>
-                  <h3 className="font-medium text-blue-800">Add Grapes to home screen</h3>
-                  <p className="text-sm text-gray-700 mt-1">
-                    {isInstallable 
-                      ? "Your browser supports adding this app to your home screen."
-                      : isIOS 
-                        ? "Tap the button below for instructions on adding to your iOS home screen."
-                        : "Clicking below will help add a bookmark/shortcut on your device's home screen."
-                    }
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    className="mt-2 border-blue-300 text-blue-800 hover:bg-blue-100"
-                    onClick={addToHomeScreen}
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First name</Label>
+                <Input
+                  id="firstName"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Enter your first name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last name</Label>
+                <Input
+                  id="lastName"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Enter your last name"
+                />
+              </div>
+
+              <div className="bg-sky-100 p-4 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="acceptEmail"
+                    checked={acceptEmail}
+                    onCheckedChange={(checked) => setAcceptEmail(checked as boolean)}
+                  />
+                  <Label
+                    htmlFor="acceptEmail"
+                    className="text-sm text-gray-700"
                   >
-                    {isInstallable ? "Install App" : "Add to home screen"}
-                  </Button>
-                  
-                  {isIOS && (
-                    <div className="mt-2 flex items-start space-x-2 text-xs text-blue-700">
-                      <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                      <p>On iOS: Tap the share icon (rectangle with arrow) at the bottom of your browser and scroll to find "Add to Home Screen"</p>
-                    </div>
-                  )}
+                    Yes, please send occasional updates on my groups' activities.
+                  </Label>
                 </div>
               </div>
-            </div>
-
-            <Button
-              className="w-full"
-              onClick={handleSave}
-              disabled={isLoading}
-              style={{ backgroundColor: "#000080" }}
-            >
-              {isLoading ? "Saving..." : "Save changes"}
-            </Button>
-
-            <div className="pt-4 flex flex-col items-center gap-4">
+              
               <Button
-                variant="ghost"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                onClick={handleLogout}
+                className="w-full"
+                onClick={handleSave}
+                disabled={isLoading}
+                style={{ backgroundColor: "#000080" }}
               >
-                Log out
+                {isLoading ? "Saving..." : "Save changes"}
               </Button>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="link"
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    Delete my profile
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action will permanently delete your account and all associated data. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteProfile}
-                      className="bg-red-600 hover:bg-red-700"
+              
+              {/* Add to home screen section - Moved below Save button and above logout */}
+              <div className="bg-blue-50 p-4 rounded-lg mt-6">
+                <div className="flex items-start space-x-3">
+                  <Smartphone className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium text-blue-800">Add Grapes to home screen</h3>
+                    <p className="text-sm text-gray-700 mt-1">
+                      {isInstallable 
+                        ? "Your browser supports adding this app to your home screen."
+                        : isIOS 
+                          ? "Tap the button below for instructions on adding to your iOS home screen."
+                          : "Clicking below will help add a bookmark/shortcut on your device's home screen."
+                      }
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-2 border-blue-300 text-blue-800 hover:bg-blue-100"
+                      onClick={addToHomeScreen}
                     >
-                      Delete account
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                      {isInstallable ? "Install App" : "Add to home screen"}
+                    </Button>
+                    
+                    {isIOS && (
+                      <div className="mt-2 flex items-start space-x-2 text-xs text-blue-700">
+                        <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                        <p>On iOS: Tap the share icon (rectangle with arrow) at the bottom of your browser and scroll to find "Add to Home Screen"</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 flex flex-col items-center gap-4">
+                <Button
+                  variant="ghost"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={handleLogout}
+                >
+                  Log out
+                </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="link"
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      Delete my profile
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action will permanently delete your account and all associated data. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteProfile}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Delete account
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </AppLayout>
   );
 };
 

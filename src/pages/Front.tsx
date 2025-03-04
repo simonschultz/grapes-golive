@@ -1,13 +1,13 @@
 
 import { Button } from "@/components/ui/button";
-import { Home, Users, Calendar, BellRing, Settings, Shield, MessageSquare, ArrowRight, UserPlus } from "lucide-react";
+import { Settings, Shield, MessageSquare, ArrowRight, UserPlus, Calendar, Users, BellRing } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { NavigationFooter } from "@/components/navigation/NavigationFooter";
 import { FeatureSection, FeatureItem } from "@/components/ui/feature-section";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 interface PendingRequest {
   group: {
@@ -79,7 +79,6 @@ const Front = () => {
           return;
         }
 
-        // Fetch site settings
         const { data: settingsData, error: settingsError } = await supabase
           .from('site_settings')
           .select('*')
@@ -89,7 +88,6 @@ const Front = () => {
           setSiteSettings(settingsData as SiteSettings);
         }
 
-        // Get notifications
         const { data: notifData, error: notifError } = await supabase
           .from('notifications')
           .select(`
@@ -105,7 +103,6 @@ const Front = () => {
         if (notifError) throw notifError;
         setNotifications(notifData as Notification[]);
 
-        // Get total count of notifications
         const { count } = await supabase
           .from('notifications')
           .select('*', { count: 'exact', head: true })
@@ -113,7 +110,6 @@ const Front = () => {
 
         setNotificationCount(count || 0);
 
-        // Check if user has any groups
         const { count: groupCount } = await supabase
           .from('group_members')
           .select('*', { count: 'exact', head: true })
@@ -122,7 +118,6 @@ const Front = () => {
 
         setHasGroups(groupCount !== null && groupCount > 0);
 
-        // Get all groups where user is an admin and get their pending requests
         const { data: adminGroups } = await supabase
           .from('group_members')
           .select(`
@@ -162,7 +157,6 @@ const Front = () => {
           setPendingRequests(requests.filter((req): req is PendingRequest => req !== null));
         }
 
-        // Get top public groups if user has no groups
         if (!groupCount || groupCount === 0) {
           const { data: topGroupsData } = await supabase.rpc('get_top_public_groups', {
             limit_count: 6
@@ -197,7 +191,7 @@ const Front = () => {
 
   const featureItems: FeatureItem[] = [
     {
-      icon: Users,
+      icon: UserPlus,
       title: "Find groups to join",
       onClick: () => navigate('/groups/join')
     },
@@ -217,143 +211,145 @@ const Front = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex-1 pb-16">
-        <header className="flex justify-between items-center p-4 border-b">
-          <h1 className="text-xl font-semibold">Grapes</h1>
-          <Button variant="ghost" size="icon" className="text-[#000080]" onClick={() => navigate('/settings')}>
-            <Settings className="h-5 w-5" />
-          </Button>
-        </header>
+    <AppLayout>
+      <div className="flex flex-col min-h-screen bg-white">
+        <div className="flex-1 pb-16 md:pb-0">
+          <header className="flex justify-between items-center p-4 border-b md:border-0 md:px-6 md:py-5">
+            <div className="flex items-center md:hidden">
+              <img 
+                src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
+                alt="Grapes Logo" 
+                className="h-5 w-5 mr-2"
+              />
+              <h1 className="text-xl font-semibold">Grapes</h1>
+            </div>
+            <div className="md:invisible md:h-0">
+              <Button variant="ghost" size="icon" className="text-[#000080] md:hidden" onClick={() => navigate('/settings')}>
+                <Settings className="h-5 w-5" />
+              </Button>
+            </div>
+          </header>
 
-        <main className="flex-1 p-4">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <div className="text-center space-y-4 mb-8">
-              <div className="flex justify-center mb-6">
-                <img 
-                  src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
-                  alt="Grapes Logo" 
-                  className="w-24 h-24"
-                />
+          <main className="flex-1 p-4 md:p-6">
+            <div className="max-w-3xl mx-auto space-y-6">
+              <div className="text-center space-y-4 mb-8">
+                <p className="text-gray-600">
+                  {siteSettings.front_page_intro}
+                </p>
+                
+                <div className="pt-4 pb-5">
+                  <FeatureSection 
+                    items={featureItems}
+                    columns={2}
+                    className="max-w-xl mx-auto"
+                  />
+                </div>
               </div>
-              <p className="text-gray-600">
-                {siteSettings.front_page_intro}
-              </p>
+
+              {!hasGroups && topGroups.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-center text-gray-900">Some inspiration</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {topGroups.map((group) => (
+                      <div 
+                        key={group.id} 
+                        className="flex flex-col items-center cursor-pointer"
+                        onClick={() => navigate(`/groups/${group.slug}`)}
+                      >
+                        <div className="w-full aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-100 mb-2">
+                          {group.image_url ? (
+                            <img
+                              src={supabase.storage.from('group-images').getPublicUrl(group.image_url).data.publicUrl}
+                              alt={group.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <UserPlus className="h-8 w-8 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-600 text-center">{group.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {pendingRequests.length > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Shield className="h-5 w-5 text-blue-600" />
+                    <h2 className="font-medium text-blue-900">Pending Approvals</h2>
+                  </div>
+                  <div className="space-y-2">
+                    {pendingRequests.map((request) => (
+                      <button
+                        key={request.group.slug}
+                        onClick={() => navigate(`/groups/${request.group.slug}/members`)}
+                        className="w-full text-left flex items-center justify-between p-3 bg-white rounded border border-blue-100 hover:bg-blue-50 transition-colors"
+                      >
+                        <span className="font-medium">{request.group.title}</span>
+                        <div className="flex items-center gap-2 text-blue-600">
+                          <UserPlus className="h-4 w-4" />
+                          <span className="text-sm">{request.count} pending</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {notifications.length > 0 && (
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-gray-600" />
+                      <h2 className="font-medium text-gray-900">Recent Activity</h2>
+                    </div>
+                    {notificationCount > 3 && (
+                      <Button 
+                        variant="ghost" 
+                        className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        onClick={() => navigate('/activity')}
+                      >
+                        See all
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    {notifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        onClick={() => navigate(`/groups/${notification.groups.slug}`)}
+                        className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                      >
+                        <div className="flex-shrink-0 mt-1">
+                          {getNotificationIcon(notification.type)}
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-900">{notification.message}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {format(new Date(notification.created_at), 'MMM d, h:mm a')}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
-              <div className="pt-4 pb-5">
-                <FeatureSection 
-                  items={featureItems}
-                  columns={2}
-                  className="max-w-xl mx-auto"
-                />
-              </div>
-              
-              <div className="text-sm text-gray-500 mt-2">
+              <div className="text-sm text-gray-500 text-center mt-2">
                 <a href="mailto:hi@grapes.group" className="hover:text-[#000080] transition-colors">
                   Need help? We are just an e-mail away.
                 </a>
               </div>
             </div>
-
-            {!hasGroups && topGroups.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium text-center text-gray-900">Some inspiration</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {topGroups.map((group) => (
-                    <div 
-                      key={group.id} 
-                      className="flex flex-col items-center cursor-pointer"
-                      onClick={() => navigate(`/groups/${group.slug}`)}
-                    >
-                      <div className="w-full aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-100 mb-2">
-                        {group.image_url ? (
-                          <img
-                            src={supabase.storage.from('group-images').getPublicUrl(group.image_url).data.publicUrl}
-                            alt={group.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Users className="h-8 w-8 text-gray-400" />
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-xs text-gray-600 text-center">{group.title}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {pendingRequests.length > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Shield className="h-5 w-5 text-blue-600" />
-                  <h2 className="font-medium text-blue-900">Pending Approvals</h2>
-                </div>
-                <div className="space-y-2">
-                  {pendingRequests.map((request) => (
-                    <button
-                      key={request.group.slug}
-                      onClick={() => navigate(`/groups/${request.group.slug}/members`)}
-                      className="w-full text-left flex items-center justify-between p-3 bg-white rounded border border-blue-100 hover:bg-blue-50 transition-colors"
-                    >
-                      <span className="font-medium">{request.group.title}</span>
-                      <div className="flex items-center gap-2 text-blue-600">
-                        <Users className="h-4 w-4" />
-                        <span className="text-sm">{request.count} pending</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {notifications.length > 0 && (
-              <div className="bg-white border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <BellRing className="h-5 w-5 text-gray-600" />
-                    <h2 className="font-medium text-gray-900">Recent Activity</h2>
-                  </div>
-                  {notificationCount > 3 && (
-                    <Button 
-                      variant="ghost" 
-                      className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                      onClick={() => navigate('/activity')}
-                    >
-                      See all
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      onClick={() => navigate(`/groups/${notification.groups.slug}`)}
-                      className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
-                    >
-                      <div className="flex-shrink-0 mt-1">
-                        {getNotificationIcon(notification.type)}
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-900">{notification.message}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {format(new Date(notification.created_at), 'MMM d, h:mm a')}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
-
-      <NavigationFooter />
-    </div>
+    </AppLayout>
   );
 };
 

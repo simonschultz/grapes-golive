@@ -1,7 +1,6 @@
-
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Home, MessageSquare, Calendar, Users, Bell, Settings, Send, ImagePlus, MoreHorizontal } from "lucide-react";
+import { Home, MessageSquare, Calendar, Users, Settings, Send, ImagePlus, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,6 +17,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { GroupNavigation } from "@/components/group/GroupNavigation";
 
 interface Message {
   id: string;
@@ -53,6 +54,7 @@ const GroupChat = () => {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -99,6 +101,7 @@ const GroupChat = () => {
         }
 
         setGroup(groupData);
+        setUserRole(memberData.role);
 
         const { data: messagesData, error: messagesError } = await supabase
           .from('messages')
@@ -298,210 +301,153 @@ const GroupChat = () => {
   if (!group) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b">
-        <div className="max-w-3xl mx-auto">
-          <div className="p-4 flex items-center justify-between">
-            <h1 className="text-xl font-semibold">{group.title}</h1>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigate(`/groups/${slug}/settings`)}
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
+    <AppLayout showFooter={false}>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <header className="bg-white border-b">
+          <div className="max-w-3xl mx-auto">
+            <div className="p-4 flex items-center justify-between">
+              <h1 className="text-xl font-semibold">{group.title}</h1>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate(`/groups/${slug}/settings`)}
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <nav className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-2">
-          <div className="flex">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="py-4"
-              onClick={() => navigate(`/groups/${slug}/front`)}
-            >
-              <Home className="h-5 w-5" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="py-4 px-3"
-              onClick={() => navigate(`/groups/${slug}/chat`)}
-            >
-              <MessageSquare className="h-5 w-5 mr-2" />
-              Chat
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="py-4 px-3"
-              onClick={() => navigate(`/groups/${slug}/calendar`)}
-            >
-              <Calendar className="h-5 w-5 mr-2" />
-              Calendar
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="py-4 px-3"
-              onClick={() => navigate(`/groups/${slug}/members`)}
-            >
-              <Users className="h-5 w-5 mr-2" />
-              Members
-            </Button>
-          </div>
-        </div>
-      </nav>
+        <GroupNavigation slug={slug || ''} userRole={userRole} />
 
-      <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-6 pb-40 overflow-y-auto">
-        <div className="space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex gap-3 ${
-                message.user_id === currentUser ? 'flex-row-reverse' : 'flex-row'
-              }`}
-            >
-              <div className="flex flex-col items-center gap-1">
-                <Avatar className="w-8 h-8 flex-shrink-0">
-                  <AvatarImage 
-                    src={message.user?.avatar_url || undefined}
-                    alt={`${message.user?.first_name || 'User'}'s avatar`}
-                  />
-                  <AvatarFallback>
-                    {message.user?.first_name?.[0]?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                {message.user_id === currentUser && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-6 w-6">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-32 p-2">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => setMessageToDelete(message.id)}
-                      >
-                        Delete
-                      </Button>
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </div>
-              <div className="flex-1">
-                <div
-                  className={`rounded-lg p-3 max-w-[80%] break-words ${
-                    message.user_id === currentUser
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-900'
-                  }`}
-                >
-                  <p className="text-sm mb-1">
-                    {message.user?.first_name} {message.user?.last_name}
-                  </p>
-                  {message.image_url && (
-                    <img 
-                      src={supabase.storage.from('chat-images').getPublicUrl(message.image_url).data.publicUrl}
-                      alt="Chat image"
-                      className="max-w-full rounded-lg mb-2"
+        <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-6 pb-40 overflow-y-auto">
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex gap-3 ${
+                  message.user_id === currentUser ? 'flex-row-reverse' : 'flex-row'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-1">
+                  <Avatar className="w-8 h-8 flex-shrink-0">
+                    <AvatarImage 
+                      src={message.user?.avatar_url || undefined}
+                      alt={`${message.user?.first_name || 'User'}'s avatar`}
                     />
-                  )}
-                  {message.content && (
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    <AvatarFallback>
+                      {message.user?.first_name?.[0]?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  {message.user_id === currentUser && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-32 p-2">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => setMessageToDelete(message.id)}
+                        >
+                          Delete
+                        </Button>
+                      </PopoverContent>
+                    </Popover>
                   )}
                 </div>
+                <div className="flex-1">
+                  <div
+                    className={`rounded-lg p-3 max-w-[80%] break-words ${
+                      message.user_id === currentUser
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-100 text-gray-900'
+                    }`}
+                  >
+                    <p className="text-sm mb-1">
+                      {message.user?.first_name} {message.user?.last_name}
+                    </p>
+                    {message.image_url && (
+                      <img 
+                        src={supabase.storage.from('chat-images').getPublicUrl(message.image_url).data.publicUrl}
+                        alt="Chat image"
+                        className="max-w-full rounded-lg mb-2"
+                      />
+                    )}
+                    {message.content && (
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+        </main>
+
+        <AlertDialog open={!!messageToDelete} onOpenChange={() => setMessageToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Message</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this message? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => messageToDelete && handleDeleteMessage(messageToDelete)}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <div className="fixed bottom-0 left-0 right-0 md:left-64 bg-white border-t p-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="flex gap-2">
+              <Textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Type a message..."
+                className="resize-none min-h-[60px] h-[60px] py-2"
+                rows={2}
+              />
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim() || isSending}
+                  size="icon"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isSending}
+                >
+                  <ImagePlus className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-      </main>
-
-      <AlertDialog open={!!messageToDelete} onOpenChange={() => setMessageToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Message</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this message? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => messageToDelete && handleDeleteMessage(messageToDelete)}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t p-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex gap-2">
-            <Textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Type a message..."
-              className="resize-none min-h-[60px] h-[60px] py-2"
-              rows={2}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
             />
-            <div className="flex flex-col gap-2">
-              <Button
-                onClick={handleSendMessage}
-                disabled={!newMessage.trim() || isSending}
-                size="icon"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isSending}
-              >
-                <ImagePlus className="h-4 w-4" />
-              </Button>
-            </div>
           </div>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-          />
         </div>
       </div>
-
-      <nav className="fixed bottom-0 left-0 right-0 border-t bg-white z-10">
-        <div className="flex justify-around items-center h-16">
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/front')}>
-            <Home className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Home</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/groups')}>
-            <Users className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Groups</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/calendar')}>
-            <Calendar className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Calendar</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/activity')}>
-            <Bell className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Activity</span>
-          </Button>
-        </div>
-      </nav>
-    </div>
+    </AppLayout>
   );
 };
 
 export default GroupChat;
-

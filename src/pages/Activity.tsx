@@ -1,210 +1,208 @@
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Home, Users, Calendar, BellRing, Settings, MessageSquare, Calendar as CalendarIcon } from "lucide-react";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BellRing, Calendar, MessageSquare, Users, ChevronRight, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { Skeleton } from "@/components/ui/skeleton";
 
-interface Notification {
+type Notification = {
   id: string;
-  type: 'chat' | 'event' | 'member';
+  type: string;
   message: string;
-  created_at: string;
   read: boolean;
   group_id: string;
-  related_item_id: string;
-  groups: {
-    slug: string;
-  };
-}
+  created_at: string;
+  group_slug?: string; // Will be populated after fetching
+};
 
 const Activity = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const [tab, setTab] = useState("all");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Get the current user
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-          navigate('/auth');
-          return;
+          throw new Error("User not authenticated");
         }
-
+        
+        // Fetch notifications for the current user
         const { data, error } = await supabase
           .from('notifications')
           .select(`
             *,
-            groups (
-              slug
-            )
+            groups:group_id (slug)
           `)
           .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(50);
-
+          .order('created_at', { ascending: false });
+        
         if (error) throw error;
         
-        const typedData = (data || []).map(item => ({
-          ...item,
-          type: item.type as 'chat' | 'event' | 'member'
+        // Add the group slug to each notification for navigation
+        const notificationsWithSlug = data.map((notification) => ({
+          ...notification,
+          group_slug: notification.groups?.slug
         }));
         
-        setNotifications(typedData);
-
-        const { error: updateError } = await supabase
-          .from('notifications')
-          .update({ read: true })
-          .eq('user_id', user.id)
-          .eq('read', false);
-
-        if (updateError) {
-          console.error('Error marking notifications as read:', updateError);
-        }
-      } catch (error: any) {
-        console.error('Error fetching notifications:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load notifications",
-          variant: "destructive",
-        });
+        setNotifications(notificationsWithSlug);
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
+        setError(err instanceof Error ? err.message : "Failed to load notifications");
       } finally {
         setIsLoading(false);
       }
     };
-
+    
     fetchNotifications();
-  }, [navigate, toast]);
+  }, []);
+  
+  // Filter notifications based on the selected tab
+  const filteredNotifications = tab === "all" 
+    ? notifications 
+    : notifications.filter(notification => notification.type === tab);
 
+  // Handle marking an item as read
+  const handleNotificationClick = async (notification: Notification) => {
+    try {
+      if (!notification.read) {
+        // Update the read status in the database
+        const { error } = await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('id', notification.id);
+        
+        if (error) throw error;
+        
+        // Update the local state
+        setNotifications(notifications.map(item => 
+          item.id === notification.id ? { ...item, read: true } : item
+        ));
+      }
+      
+      // Navigate to the group page
+      if (notification.group_slug) {
+        navigate(`/groups/${notification.group_slug}`);
+      }
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
+    }
+  };
+  
+  // Helper function to format the time of a notification
+  const formatNotificationTime = (createdAt: string) => {
+    const date = new Date(createdAt);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return "Just now";
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 172800) {
+      return "Yesterday";
+    } else {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} days ago`;
+    }
+  };
+  
+  // Get the appropriate icon based on notification type
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'chat':
-        return <MessageSquare className="h-5 w-5 text-blue-500" />;
+        return <MessageSquare className="h-4 w-4" />;
       case 'event':
-        return <CalendarIcon className="h-5 w-5 text-blue-600" />;
+        return <Calendar className="h-4 w-4" />;
       case 'member':
-        return <Users className="h-5 w-5 text-blue-700" />;
+        return <Users className="h-4 w-4" />;
       default:
-        return <BellRing className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
-  const handleNotificationClick = (notification: Notification) => {
-    const { type, groups, related_item_id } = notification;
-    const groupPath = `/groups/${groups.slug}`;
-    
-    switch (type) {
-      case 'chat':
-        navigate(`${groupPath}/chat`);
-        break;
-      case 'event':
-        navigate(`${groupPath}/calendar/${related_item_id}`);
-        break;
-      case 'member':
-        navigate(`${groupPath}/members`);
-        break;
-      default:
-        navigate(groupPath);
+        return <BellRing className="h-4 w-4" />;
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <div className="flex-1 pb-16">
-        <header className="flex justify-between items-center p-4 border-b bg-white">
-          <div className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
-              alt="Grapes Logo" 
-              className="w-8 h-8"
-            />
-            <h1 className="text-xl font-semibold">Activity</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-[#000080]"
-              onClick={() => navigate('/settings')}
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
-          </div>
+    <AppLayout>
+      <div className="min-h-screen bg-white flex flex-col">
+        <header className="flex justify-between items-center p-4 border-b md:px-6 md:py-5">
+          <h1 className="text-xl font-semibold md:text-2xl">Activity</h1>
         </header>
-
-        <main className="max-w-3xl mx-auto px-4 py-6">
-          {isLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-start gap-4 bg-white p-4 rounded-lg border">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/4" />
-                  </div>
+        
+        <main className="flex-1 p-4 md:p-6">
+          <div className="max-w-3xl mx-auto">
+            <Card className="bg-white border rounded-lg shadow-sm">
+              <CardHeader className="border-b pb-3">
+                <CardTitle>Recent Activity</CardTitle>
+              </CardHeader>
+              <Tabs defaultValue="all" value={tab} onValueChange={setTab} className="w-full">
+                <div className="px-4 pt-3">
+                  <TabsList className="grid grid-cols-4 w-full">
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    <TabsTrigger value="chat">Chat</TabsTrigger>
+                    <TabsTrigger value="event">Events</TabsTrigger>
+                    <TabsTrigger value="member">Members</TabsTrigger>
+                  </TabsList>
                 </div>
-              ))}
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="text-center py-8 bg-white rounded-lg border">
-              <BellRing className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">No activity yet</h3>
-              <p className="text-gray-500 mt-2">
-                This is your overview of what happens in groups you have joined.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-xs text-gray-500 mb-2">Activities in your groups...</p>
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
-                  className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-colors
-                    ${notification.read ? 'bg-white' : 'bg-blue-50'} hover:bg-gray-50`}
-                >
-                  <div className="flex-shrink-0 mt-1">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900">{notification.message}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {format(new Date(notification.created_at), 'MMM d, h:mm a')}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                <TabsContent value={tab} className="mt-0">
+                  <CardContent className="pt-4">
+                    {isLoading ? (
+                      <div className="flex justify-center items-center py-8">
+                        <Loader2 className="h-6 w-6 text-[#000080] animate-spin" />
+                        <span className="ml-2">Loading activities...</span>
+                      </div>
+                    ) : error ? (
+                      <div className="text-center text-red-500 py-4">
+                        {error}
+                      </div>
+                    ) : filteredNotifications.length > 0 ? (
+                      <div className="space-y-4">
+                        {filteredNotifications.map((notification) => (
+                          <div 
+                            key={notification.id} 
+                            className={`flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`}
+                            onClick={() => handleNotificationClick(notification)}
+                          >
+                            <div className="bg-[#000080]/10 text-[#000080] rounded-full p-2 mt-1">
+                              {getNotificationIcon(notification.type)}
+                            </div>
+                            <div className="flex-1">
+                              <p className={`text-sm ${!notification.read ? 'font-medium' : ''}`}>
+                                {notification.message}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {formatNotificationTime(notification.created_at)}
+                              </p>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-gray-400 mt-2" />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-gray-500 py-4">
+                        No activities to display
+                      </p>
+                    )}
+                  </CardContent>
+                </TabsContent>
+              </Tabs>
+            </Card>
+          </div>
         </main>
       </div>
-
-      <nav className="fixed bottom-0 left-0 right-0 border-t bg-white z-30">
-        <div className="flex justify-around items-center h-16">
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/front')}>
-            <Home className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Home</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/groups')}>
-            <Users className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Groups</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/calendar')}>
-            <Calendar className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Calendar</span>
-          </Button>
-          <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/activity')}>
-            <BellRing className="h-5 w-5 text-[#000080] fill-[#000080]" />
-            <span className="text-xs">Activity</span>
-          </Button>
-        </div>
-      </nav>
-    </div>
+    </AppLayout>
   );
 };
 

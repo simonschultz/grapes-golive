@@ -1,223 +1,217 @@
 
-import { Button } from "@/components/ui/button";
-import { Settings, CalendarIcon, MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CalendarIcon, ChevronRight, Loader2, List } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { NavigationFooter } from "@/components/navigation/NavigationFooter";
 
 interface Event {
   id: string;
   title: string;
-  description: string | null;
   date: string;
   time_start: string;
   time_end: string | null;
   location: string | null;
-  group: {
-    title: string;
-    slug: string;
-  };
+  groupSlug: string;
+  groupName: string;
 }
 
-const CalendarPage = () => {
+const Calendar = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
   const [events, setEvents] = useState<Event[]>([]);
-
+  const [isLoading, setIsLoading] = useState(true);
+  
   useEffect(() => {
     const fetchEvents = async () => {
+      setIsLoading(true);
       try {
         const { data: { user } } = await supabase.auth.getUser();
+        
         if (!user) {
           navigate('/auth');
           return;
         }
-
-        const { data: attendanceData, error } = await supabase
+        
+        // Get events created by the user
+        const { data: createdEvents, error: createdError } = await supabase
+          .from('group_events')
+          .select(`
+            id, 
+            title, 
+            date, 
+            time_start, 
+            time_end, 
+            location,
+            group_id,
+            groups(title, slug)
+          `)
+          .eq('created_by', user.id)
+          .order('date', { ascending: true });
+          
+        if (createdError) throw createdError;
+        
+        // Get events where user RSVPed yes or maybe
+        const { data: rsvpEvents, error: rsvpError } = await supabase
           .from('group_event_attendance')
           .select(`
             event_id,
             status,
-            group_events (
-              id,
-              title,
-              description,
-              date,
-              time_start,
-              time_end,
+            group_events(
+              id, 
+              title, 
+              date, 
+              time_start, 
+              time_end, 
               location,
               group_id,
-              groups (
-                title,
-                slug
-              )
+              groups(title, slug)
             )
           `)
           .eq('user_id', user.id)
           .in('status', ['yes', 'maybe'])
-          .order('group_events(date)', { ascending: true })
-          .order('group_events(time_start)', { ascending: true });
-
-        if (error) throw error;
-
-        const formattedEvents = attendanceData
-          .filter(attendance => attendance.group_events)
-          .map(attendance => ({
-            id: attendance.group_events.id,
-            title: attendance.group_events.title,
-            description: attendance.group_events.description,
-            date: attendance.group_events.date,
-            time_start: attendance.group_events.time_start,
-            time_end: attendance.group_events.time_end,
-            location: attendance.group_events.location,
-            group: {
-              title: attendance.group_events.groups.title,
-              slug: attendance.group_events.groups.slug,
-            }
+          .order('group_events.date', { ascending: true });
+          
+        if (rsvpError) throw rsvpError;
+        
+        // Process created events
+        const formattedCreatedEvents = createdEvents.map(event => ({
+          id: event.id,
+          title: event.title,
+          date: event.date,
+          time_start: event.time_start,
+          time_end: event.time_end,
+          location: event.location,
+          groupSlug: event.groups?.slug || '',
+          groupName: event.groups?.title || '',
+        }));
+        
+        // Process RSVP events
+        const formattedRsvpEvents = rsvpEvents
+          .filter(item => item.group_events) // Filter out any null events
+          .map(item => ({
+            id: item.group_events?.id || '',
+            title: item.group_events?.title || '',
+            date: item.group_events?.date || '',
+            time_start: item.group_events?.time_start || '',
+            time_end: item.group_events?.time_end || null,
+            location: item.group_events?.location || null,
+            groupSlug: item.group_events?.groups?.slug || '',
+            groupName: item.group_events?.groups?.title || '',
+            status: item.status
           }));
-
-        setEvents(formattedEvents);
-      } catch (error) {
+        
+        // Combine and deduplicate events (avoiding duplicates if user created and RSVPed to the same event)
+        const eventMap = new Map();
+        
+        // Add created events to map
+        formattedCreatedEvents.forEach(event => {
+          eventMap.set(event.id, event);
+        });
+        
+        // Add RSVP events to map (will overwrite if same ID, which is fine)
+        formattedRsvpEvents.forEach(event => {
+          if (!eventMap.has(event.id)) {
+            eventMap.set(event.id, event);
+          }
+        });
+        
+        // Convert map to array and sort by date
+        let combinedEvents = Array.from(eventMap.values());
+        combinedEvents = combinedEvents.sort((a, b) => {
+          const dateA = new Date(a.date + 'T' + a.time_start);
+          const dateB = new Date(b.date + 'T' + b.time_start);
+          return dateA.getTime() - dateB.getTime();
+        });
+        
+        setEvents(combinedEvents);
+      } catch (error: any) {
         console.error('Error fetching events:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load events. Please try again.",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchEvents();
-  }, [navigate]);
-
-  // Function to get a color based on the event's group name
-  const getEventColor = (groupTitle: string) => {
-    // Simple hash function to generate a consistent color for each group
-    const hash = groupTitle.split('').reduce((acc, char) => {
-      return char.charCodeAt(0) + ((acc << 5) - acc);
-    }, 0);
+  }, [navigate, toast]);
+  
+  // Function to format event date for display
+  const formatEventDate = (eventDate: string, timeStart: string) => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
     
-    // List of attractive blue shades instead of purple
-    const colors = [
-      'bg-[#0EA5E9]', // Ocean Blue
-      'bg-[#1EAEDB]', // Bright Blue
-      'bg-[#33C3F0]', // Sky Blue
-      'bg-[#0FA0CE]', // Bright Blue
-      'bg-[#221F26]', // Dark Blue/Charcoal
-      'bg-[#2C5282]', // Navy Blue
-      'bg-[#3B82F6]', // Bright Blue
-      'bg-[#1D4ED8]', // Royal Blue
-    ];
+    const date = new Date(eventDate);
     
-    // Use the hash to select a color from the array
-    const colorIndex = Math.abs(hash) % colors.length;
-    return colors[colorIndex];
-  };
-
-  // Function to get text color based on background color
-  const getTextColor = (bgColor: string) => {
-    // Darker backgrounds need white text, lighter ones need dark text
-    const lightBackgrounds = ['bg-[#33C3F0]'];
-    return lightBackgrounds.includes(bgColor) ? 'text-gray-800' : 'text-white';
+    if (date.toDateString() === today.toDateString()) {
+      return `Today at ${format(new Date(`2000-01-01T${timeStart}`), 'h:mm a')}`;
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return `Tomorrow at ${format(new Date(`2000-01-01T${timeStart}`), 'h:mm a')}`;
+    } else {
+      return `${format(date, 'MMM d')} at ${format(new Date(`2000-01-01T${timeStart}`), 'h:mm a')}`;
+    }
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex-1 pb-16">
-        <header className="flex justify-between items-center p-4 border-b">
-          <div className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
-              alt="Grapes Logo" 
-              className="w-8 h-8"
-            />
-            <h1 className="text-xl font-semibold text-[#000080]">Calendar</h1>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="text-[#000080]"
-            onClick={() => navigate('/settings')}
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
+    <AppLayout>
+      <div className="min-h-screen bg-white flex flex-col">
+        <header className="flex justify-between items-center p-4 border-b md:px-6 md:py-5">
+          <h1 className="text-xl font-semibold md:text-2xl">Calendar</h1>
         </header>
-
-        <main className="max-w-3xl mx-auto px-4 py-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <p>Loading events...</p>
-            </div>
-          ) : events.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <CalendarIcon className="h-24 w-24 text-gray-400 mb-4" />
-              <p className="text-xl font-semibold text-[#000080]">Sorry, no upcoming events</p>
-              <p className="text-gray-500 mt-2">
-                All events that you (might) attend, will show up here.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {events.map((event) => {
-                const bgColor = getEventColor(event.group.title);
-                const textColor = getTextColor(bgColor);
-                
-                return (
-                  <div
-                    key={event.id}
-                    className="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-                    onClick={() => navigate(`/groups/${event.group.slug}/calendar/${event.id}`)}
-                  >
-                    <div className={`bg-[#000080] p-4`}>
-                      <h3 className={`font-bold text-xl text-white`}>{event.title}</h3>
-                      <p className={`text-white opacity-90 text-sm font-medium mt-1`}>
-                        {event.group.title}
-                      </p>
-                    </div>
-                    
-                    <div className="flex bg-white">
-                      <div className="min-w-[100px] p-4 flex flex-col items-center justify-center border-r">
-                        <p className="text-4xl font-bold text-gray-800">
-                          {format(new Date(event.date), 'd')}
-                        </p>
-                        <p className="text-sm text-gray-600 uppercase font-medium">
-                          {format(new Date(event.date), 'MMM')}
-                        </p>
-                      </div>
-                      
-                      <div className="p-4 flex-1">
-                        {event.description && (
-                          <p className="text-gray-700 mb-3">{event.description}</p>
-                        )}
-                        
-                        <div className="flex items-center text-sm text-gray-600 mb-2">
-                          <CalendarIcon className="h-4 w-4 mr-2 inline-block" />
-                          <span>
-                            {format(new Date(`2000-01-01T${event.time_start}`), 'h:mm a')}
-                            {event.time_end && (
-                              <> - {format(new Date(`2000-01-01T${event.time_end}`), 'h:mm a')}</>
-                            )}
-                          </span>
-                        </div>
-                        
-                        {event.location && (
-                          <div className="flex items-start text-sm text-gray-600">
-                            <MapPin className="h-4 w-4 mr-2" />
-                            <span>{event.location}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+        
+        <main className="flex-1 p-4 md:p-6">
+          <div className="max-w-3xl mx-auto">
+            {/* Events List */}
+            <Card className="bg-white border rounded-lg shadow-sm">
+              <CardHeader className="border-b pb-4 flex flex-row items-center">
+                <List className="h-5 w-5 text-[#000080] mr-2" />
+                <CardTitle>Your Events</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4">
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-8">
+                    <Loader2 className="h-8 w-8 text-[#000080] animate-spin" />
                   </div>
-                );
-              })}
-            </div>
-          )}
+                ) : events.length > 0 ? (
+                  <div className="space-y-4">
+                    {events.map((event) => (
+                      <div 
+                        key={event.id} 
+                        className="flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0 cursor-pointer"
+                        onClick={() => navigate(`/groups/${event.groupSlug}/calendar/${event.id}`)}
+                      >
+                        <div className="bg-[#000080]/10 text-[#000080] rounded-full p-2 mt-1">
+                          <CalendarIcon className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium text-sm">{event.title}</h3>
+                          <p className="text-sm text-gray-500">{formatEventDate(event.date, event.time_start)}</p>
+                          <p className="text-xs text-gray-400 mt-1">{event.groupName}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-gray-400 mt-2" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500 py-8">
+                    No upcoming events. Join a group to participate in events!
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </main>
       </div>
-
-      <NavigationFooter />
-    </div>
+    </AppLayout>
   );
 };
 
-export default CalendarPage;
+export default Calendar;

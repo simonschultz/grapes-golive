@@ -5,7 +5,7 @@ import { Settings, Plus, User, UsersRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { NavigationFooter } from "@/components/navigation/NavigationFooter";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 interface Group {
   id: string;
@@ -98,7 +98,7 @@ const Groups = () => {
 
   const GroupList = () => (
     <div className="flex-1 p-4">
-      <div className="grid gap-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {groups.map((group) => (
           <div
             key={group.id}
@@ -131,7 +131,7 @@ const Groups = () => {
         ))}
         <Button
           variant="outline"
-          className="w-full mt-4"
+          className="w-full mt-4 md:col-span-2 lg:col-span-3"
           onClick={() => navigate('/groups/join')}
         >
           Find more groups
@@ -141,49 +141,48 @@ const Groups = () => {
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <div className="flex-1 pb-16 relative">
-        <header className="flex justify-between items-center p-4 bg-white border-b">
-          <div className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
-              alt="Grapes Logo" 
-              className="w-8 h-8"
-            />
-            <h1 className="text-xl font-semibold">My groups</h1>
-          </div>
+    <AppLayout>
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <div className="flex-1 pb-16 md:pb-0 relative">
+          <header className="flex justify-between items-center p-4 bg-white border-b md:border-0 md:px-6 md:py-5">
+            <div className="flex items-center gap-2">
+              <img 
+                src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
+                alt="Grapes Logo" 
+                className="w-8 h-8 md:hidden"
+              />
+              <h1 className="text-xl font-semibold">My groups</h1>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-[#000080] md:hidden"
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+          </header>
+
+          {isLoading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-gray-600">Loading...</p>
+            </div>
+          ) : groups.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <GroupList />
+          )}
+
           <Button
-            variant="ghost"
-            size="icon"
-            className="text-[#000080]"
-            onClick={() => navigate('/settings')}
+            className="fixed bottom-20 right-4 md:bottom-6 rounded-full w-14 h-14 shadow-lg bg-[#000080] hover:bg-[#000060]"
+            onClick={() => navigate('/groups/create')}
           >
-            <Settings className="h-5 w-5" />
+            <Plus className="h-6 w-6" />
           </Button>
-        </header>
-
-        {isLoading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-gray-600">Loading...</p>
-          </div>
-        ) : groups.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <GroupList />
-        )}
-
-        <Button
-          className="fixed bottom-20 right-4 rounded-full w-14 h-14 shadow-lg bg-[#000080] hover:bg-[#000060]"
-          onClick={() => navigate('/groups/create')}
-        >
-          <Plus className="h-6 w-6" />
-        </Button>
+        </div>
       </div>
-
-      <NavigationFooter />
-    </div>
+    </AppLayout>
   );
 };
 
 export default Groups;
-
