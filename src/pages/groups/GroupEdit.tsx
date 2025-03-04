@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -175,7 +174,7 @@ const GroupEdit = () => {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
         <div className="max-w-3xl mx-auto">
-          <div className="p-4 flex items-center gap-4">
+          <div className="px-3 sm:px-4 py-4 flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon"
@@ -188,8 +187,8 @@ const GroupEdit = () => {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto w-full px-4 py-6">
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+      <main className="max-w-3xl mx-auto w-full px-3 sm:px-4 py-6">
+        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-4 sm:p-6 space-y-6">
           <div className="flex flex-col items-center space-y-4">
             <Avatar className="w-24 h-24">
               <AvatarImage 

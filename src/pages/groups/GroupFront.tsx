@@ -102,7 +102,7 @@ const GroupFront = () => {
           slug={group.slug} 
           userRole={userRole}
         />
-        <main className="max-w-3xl mx-auto p-4 pb-24">
+        <main className="max-w-3xl mx-auto px-3 sm:px-4 pb-24">
           <div className="bg-white rounded-lg shadow">
             <GroupInfo 
               title={group.title}

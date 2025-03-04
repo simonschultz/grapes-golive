@@ -198,7 +198,7 @@ const Group = () => {
           title={group.title}
           imageUrl={group.image_url}
         />
-        <main className="max-w-3xl mx-auto p-4">
+        <main className="max-w-3xl mx-auto px-3 sm:px-4">
           <div className="bg-white rounded-lg shadow">
             <GroupInfo 
               title={group.title}
