@@ -21,7 +21,7 @@ export const GroupNavigation = ({ slug, userRole }: GroupNavigationProps) => {
             onClick={() => navigate(`/groups/${slug}/front`)}
           >
             <Home className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1 sm:mr-2 md:mr-3" />
-            <span className="text-xs sm:text-sm md:text-base">Home</span>
+            <span className="text-xs sm:text-sm md:text-base">Front</span>
           </Button>
           <Button 
             variant="ghost" 
