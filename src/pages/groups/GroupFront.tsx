@@ -29,20 +29,9 @@ const GroupFront = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [showConfetti, setShowConfetti] = useState(false);
 
   // Check if user just created this group
   const justCreated = new URLSearchParams(location.search).get("new") === "true";
-
-  useEffect(() => {
-    if (justCreated) {
-      setShowConfetti(true);
-      // Remove confetti after 5 seconds
-      setTimeout(() => {
-        setShowConfetti(false);
-      }, 5000);
-    }
-  }, [justCreated]);
 
   useEffect(() => {
     const fetchGroupData = async () => {
@@ -109,20 +98,6 @@ const GroupFront = () => {
   return (
     <AppLayout>
       <div className="min-h-screen bg-gray-50">
-        {showConfetti && (
-          <div className="confetti-container fixed inset-0 pointer-events-none z-50">
-            <div className="confetti"></div>
-            <div className="confetti"></div>
-            <div className="confetti"></div>
-            <div className="confetti"></div>
-            <div className="confetti"></div>
-            <div className="confetti"></div>
-            <div className="confetti"></div>
-            <div className="confetti"></div>
-            <div className="confetti"></div>
-            <div className="confetti"></div>
-          </div>
-        )}
         <GroupHeader 
           title={group.title}
           imageUrl={group.image_url}
