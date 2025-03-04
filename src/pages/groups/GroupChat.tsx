@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { GroupNavigation } from "@/components/group/GroupNavigation";
+import { format, formatDistance } from "date-fns";
 
 interface Message {
   id: string;
@@ -192,6 +193,21 @@ const GroupChat = () => {
 
     checkAccess();
   }, [slug, navigate, toast]);
+
+  const formatMessageTime = (timestamp: string) => {
+    const messageDate = new Date(timestamp);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - messageDate.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`;
+    } else if (diffInMinutes < 24 * 60) {
+      const diffInHours = Math.floor(diffInMinutes / 60);
+      return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+    } else {
+      return format(messageDate, "d. MMMM yyyy");
+    }
+  };
 
   const handleDeleteMessage = async (messageId: string) => {
     try {
@@ -386,6 +402,11 @@ const GroupChat = () => {
                       <p className="whitespace-pre-wrap">{message.content}</p>
                     )}
                   </div>
+                  <p className={`text-xs mt-1 ${
+                    message.user_id === currentUser ? 'text-right mr-2' : 'ml-2'
+                  } text-gray-500`}>
+                    {formatMessageTime(message.created_at)}
+                  </p>
                 </div>
               </div>
             ))}
