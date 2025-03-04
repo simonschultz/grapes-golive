@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+
+const ADMIN_EMAILS = ['simon@commis.dk', 'hi@grapes.group'];
 
 interface SiteSettings {
   id: string;
@@ -27,7 +28,6 @@ interface Group {
   featured?: boolean;
 }
 
-// Define an interface for the admin user
 interface AdminUser {
   email: string;
   id: string;
@@ -49,29 +49,22 @@ const Admin = () => {
   const [featuredGroups, setFeaturedGroups] = useState<Group[]>([]);
   const [featuredGroupIds, setFeaturedGroupIds] = useState<string[]>([]);
 
-  // Check if current user is an admin
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        // Get current user
         const { data: { user } } = await supabase.auth.getUser();
+        
+        console.log("Admin page - Current user:", user?.email);
         
         if (user && user.email) {
           setCurrentUserEmail(user.email);
           
-          // Check if user is in admin_users table
-          const { data: adminUser, error } = await supabase
-            .from('admin_users')
-            .select('*')
-            .eq('email', user.email)
-            .maybeSingle();
-            
-          if (error) {
-            console.error('Error checking admin status:', error);
-            return;
-          }
+          const isAdminEmail = ADMIN_EMAILS.some(email => 
+            email.toLowerCase() === user.email?.toLowerCase()
+          );
           
-          setIsAdmin(!!adminUser);
+          console.log("Admin page - Is in admin emails list:", isAdminEmail);
+          setIsAdmin(isAdminEmail);
         }
       } catch (error) {
         console.error('Error checking admin status:', error);
@@ -86,7 +79,6 @@ const Admin = () => {
     
     const fetchSettings = async () => {
       try {
-        // Use maybeSingle instead of single to avoid errors if no record is found
         const { data, error } = await supabase
           .from('site_settings')
           .select('*')
@@ -107,7 +99,6 @@ const Admin = () => {
 
     const fetchFeaturedGroups = async () => {
       try {
-        // Fetch the admin_settings to get featured group IDs
         const { data: adminSettings, error: settingsError } = await supabase
           .from('admin_settings')
           .select('*')
@@ -119,10 +110,8 @@ const Admin = () => {
           return;
         }
 
-        // Fix for the TypeScript error - properly access the group_ids property from the JSON value
         let featuredIds: string[] = [];
         if (adminSettings?.value) {
-          // Check if value is an object with group_ids property
           const valueObj = typeof adminSettings.value === 'string' 
             ? JSON.parse(adminSettings.value) 
             : adminSettings.value as Record<string, any>;
@@ -132,7 +121,6 @@ const Admin = () => {
         
         setFeaturedGroupIds(featuredIds);
 
-        // Fetch all public groups
         const { data: groups, error: groupsError } = await supabase
           .from('public_groups_with_counts')
           .select('*')
@@ -144,7 +132,6 @@ const Admin = () => {
         }
 
         if (groups) {
-          // Mark featured groups
           const mappedGroups = groups.map(group => ({
             ...group,
             featured: featuredIds.includes(group.id)
@@ -152,7 +139,6 @@ const Admin = () => {
           
           setPublicGroups(mappedGroups);
           
-          // Filter featured groups
           const featured = mappedGroups.filter(group => featuredIds.includes(group.id));
           setFeaturedGroups(featured);
         }
@@ -211,9 +197,7 @@ const Admin = () => {
     try {
       setIsSaving(true);
 
-      // Check if we need to insert a new record or update an existing one
       if (!settings.id) {
-        // No ID, so we need to insert a new record
         const { data, error } = await supabase
           .from('site_settings')
           .insert({
@@ -228,7 +212,6 @@ const Admin = () => {
           setSettings(data as SiteSettings);
         }
       } else {
-        // We have an ID, so update the existing record
         const { data, error } = await supabase
           .from('site_settings')
           .update({
@@ -263,7 +246,6 @@ const Admin = () => {
   };
 
   const toggleGroupFeatured = (groupId: string) => {
-    // Check if we already have 6 featured groups and this would add a 7th
     if (!featuredGroupIds.includes(groupId) && featuredGroupIds.length >= 6) {
       toast({
         title: "Limit Reached",
@@ -273,7 +255,6 @@ const Admin = () => {
       return;
     }
 
-    // Toggle the group in the featuredGroupIds array
     setFeaturedGroupIds(prev => {
       if (prev.includes(groupId)) {
         return prev.filter(id => id !== groupId);
@@ -282,7 +263,6 @@ const Admin = () => {
       }
     });
 
-    // Update the publicGroups state to reflect the change
     setPublicGroups(prev => 
       prev.map(group => {
         if (group.id === groupId) {
@@ -308,7 +288,6 @@ const Admin = () => {
       console.log("Saving featured groups:", featuredGroupIds);
       console.log("Current user email:", currentUserEmail);
 
-      // Check if any admin settings entry with key 'featured_groups' exists
       const { data: existingSettings, error: checkError } = await supabase
         .from('admin_settings')
         .select('*')
@@ -321,9 +300,7 @@ const Admin = () => {
       }
       
       let upsertError;
-      // Insert or update based on whether the setting already exists
       if (existingSettings) {
-        // Update existing setting
         console.log("Updating existing featured groups setting");
         const { error } = await supabase
           .from('admin_settings')
@@ -335,7 +312,6 @@ const Admin = () => {
           
         upsertError = error;
       } else {
-        // Insert new setting
         console.log("Creating new featured groups setting");
         const { error } = await supabase
           .from('admin_settings')
@@ -352,7 +328,6 @@ const Admin = () => {
         throw upsertError;
       }
 
-      // Update featuredGroups array for display
       const featured = publicGroups.filter(group => featuredGroupIds.includes(group.id));
       setFeaturedGroups(featured);
 

@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,14 +38,37 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const checkAdminAccess = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsAdmin(!!user && ADMIN_EMAILS.includes(user.email ?? ''));
-      setLoading(false);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log("Current user:", user?.email);
+        
+        if (user && user.email) {
+          // Check if email is in ADMIN_EMAILS array (case insensitive)
+          const isAdminEmail = ADMIN_EMAILS.some(email => 
+            email.toLowerCase() === user.email?.toLowerCase()
+          );
+          
+          console.log("Is admin email match:", isAdminEmail);
+          setIsAdmin(isAdminEmail);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error("Error checking admin access:", error);
+        setIsAdmin(false);
+      } finally {
+        setLoading(false);
+      }
     };
+    
     checkAdminAccess();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAdmin(!!session?.user && ADMIN_EMAILS.includes(session.user.email ?? ''));
+      const user = session?.user;
+      const isAdminEmail = user && user.email && 
+        ADMIN_EMAILS.some(email => email.toLowerCase() === user.email?.toLowerCase());
+      
+      setIsAdmin(!!isAdminEmail);
     });
 
     return () => subscription.unsubscribe();
@@ -55,6 +79,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!isAdmin) {
+    console.log("Access denied to admin route");
     return <Navigate to="/" replace />;
   }
 
