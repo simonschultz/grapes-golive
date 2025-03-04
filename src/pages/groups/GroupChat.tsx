@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Home, MessageSquare, Calendar, Users, Settings, Send, ImagePlus, MoreHorizontal } from "lucide-react";
+import { MessageSquare, Send, ImagePlus, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -55,6 +55,12 @@ const GroupChat = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(isIOSDevice);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -312,7 +318,7 @@ const GroupChat = () => {
                 size="icon"
                 onClick={() => navigate(`/groups/${slug}/settings`)}
               >
-                <Settings className="h-5 w-5" />
+                <MoreHorizontal className="h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -415,7 +421,8 @@ const GroupChat = () => {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleKeyPress}
                 placeholder="Type a message..."
-                className="resize-none min-h-[60px] h-[60px] py-2"
+                className={`resize-none min-h-[60px] h-[60px] py-2 ${isIOS ? 'text-base' : 'text-sm'}`}
+                style={isIOS ? { fontSize: '16px' } : undefined}
                 rows={2}
               />
               <div className="flex flex-col gap-2">
@@ -423,6 +430,7 @@ const GroupChat = () => {
                   onClick={handleSendMessage}
                   disabled={!newMessage.trim() || isSending}
                   size="icon"
+                  className="bg-[#000080] hover:bg-[#000060]"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
