@@ -168,7 +168,7 @@ const Calendar = () => {
         </header>
         
         <main className="flex-1 p-4 md:p-6">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             {/* Events List */}
             <Card className="bg-white border rounded-lg shadow-sm">
               <CardHeader className="border-b pb-4 flex flex-row items-center">
