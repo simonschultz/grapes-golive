@@ -13,9 +13,9 @@ export const GroupInfo = ({ title, description, isPrivate }: GroupInfoProps) => 
       <div>
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">{title}</h1>
         <div className="flex items-center mt-2 text-gray-600">
-          {isPrivate && (
-            <span className="text-xs sm:text-sm bg-gray-100 px-2 py-1 rounded">Private Group</span>
-          )}
+          <span className="text-xs sm:text-sm bg-gray-100 px-2 py-1 rounded">
+            {isPrivate ? "Private group" : "Public group"}
+          </span>
         </div>
       </div>
 
