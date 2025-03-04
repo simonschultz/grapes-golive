@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload } from "lucide-react";
@@ -107,7 +106,7 @@ const CreateGroup = () => {
         title: "Success",
         description: "Group created successfully",
       });
-      navigate(`/groups/${slug}/front`);
+      navigate(`/groups/${slug}/front?created=true`);
     } catch (error: any) {
       toast({
         title: "Error",
