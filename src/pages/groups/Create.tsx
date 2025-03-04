@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload } from "lucide-react";
@@ -194,6 +195,7 @@ const CreateGroup = () => {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your group"
               rows={4}
+              className="text-base md:text-sm"
             />
           </div>
 
@@ -219,7 +221,7 @@ const CreateGroup = () => {
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full bg-[#000080] hover:bg-[#000080]/90"
             disabled={isLoading || !title || !slug}
           >
             {isLoading ? "Creating..." : "Create Group"}

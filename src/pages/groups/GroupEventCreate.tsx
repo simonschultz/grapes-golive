@@ -184,6 +184,7 @@ const GroupEventCreate = () => {
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Add event description"
+              className="text-base md:text-sm"
             />
           </div>
 
@@ -265,6 +266,7 @@ const GroupEventCreate = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
+              className="bg-[#000080] hover:bg-[#000080]/90"
             >
               Create Event
             </Button>
