@@ -265,7 +265,7 @@ const GroupMembers = () => {
         <header className="bg-white border-b">
           <div className="max-w-3xl mx-auto">
             <div className="px-3 sm:px-4 py-4 flex items-center justify-between">
-              <h1 className="text-xl font-semibold">{group.title}</h1>
+              <h1 className="text-xl font-semibold">{group?.title}</h1>
               <Button 
                 variant="ghost" 
                 size="icon"
@@ -279,23 +279,23 @@ const GroupMembers = () => {
 
         <GroupNavigation slug={slug || ''} userRole={userRole} />
 
-        <main className="flex-1 max-w-3xl mx-auto px-3 sm:px-4 py-6">
+        <main className="flex-1 max-w-4xl mx-auto px-3 sm:px-4 py-6 w-full">
           <div className="bg-white rounded-lg shadow">
             <div className="p-6">
               <h2 className="text-xl font-semibold mb-4">Members</h2>
               
               <div className="space-y-4">
                 {members.map((member) => (
-                  <div key={member.user_id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
+                  <div key={member.user_id} className="flex items-center justify-between p-3 border rounded-md w-full">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-12 w-12">
                         <AvatarImage src={member.profiles.avatar_url || undefined} />
                         <AvatarFallback>
                           {member.profiles.first_name?.[0]?.toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">
+                        <div className="font-medium text-lg">
                           {member.profiles.first_name} {member.profiles.last_name}
                         </div>
                         <div className="text-sm text-muted-foreground">
@@ -336,15 +336,15 @@ const GroupMembers = () => {
                 
                 <div className="space-y-4">
                   {requests.map((request) => (
-                    <div key={request.user_id} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
+                    <div key={request.user_id} className="flex items-center justify-between p-3 border rounded-md w-full">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-12 w-12">
                           <AvatarImage src={request.profiles.avatar_url || undefined} />
                           <AvatarFallback>
                             {request.profiles.first_name?.[0]?.toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="font-medium">
+                        <div className="font-medium text-lg">
                           {request.profiles.first_name} {request.profiles.last_name}
                         </div>
                       </div>
@@ -354,6 +354,7 @@ const GroupMembers = () => {
                           variant="default" 
                           size="sm"
                           onClick={() => handleApproveJoinRequest(request.user_id)}
+                          className="bg-[#000080] hover:bg-[#000080]/90"
                         >
                           Approve
                         </Button>
