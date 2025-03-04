@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -131,20 +132,38 @@ const GroupRouteGuard = ({ children }: { children: React.ReactNode }) => {
 
       // If user is authenticated, check if they are a member of the group
       if (isAuthenticated && slug) {
-        const { data: membership, error } = await supabase
-          .from('group_members')
-          .select('role')
-          .eq('group_id', 
-            supabase.rpc('get_group_id_from_slug', { slug_param: slug })
-          )
-          .eq('user_id', user.id)
-          .maybeSingle();
+        try {
+          // First, get the group ID from slug
+          const { data: groupData, error: groupError } = await supabase
+            .from('groups')
+            .select('id')
+            .eq('slug', slug)
+            .single();
+            
+          if (groupError) {
+            console.error("Error finding group by slug:", groupError);
+            setLoading(false);
+            return;
+          }
+          
+          const groupId = groupData.id;
+          
+          // Then check membership with the retrieved group ID
+          const { data: membership, error } = await supabase
+            .from('group_members')
+            .select('role')
+            .eq('group_id', groupId)
+            .eq('user_id', user.id)
+            .maybeSingle();
 
-        if (error) {
-          console.error("Error checking group membership:", error);
+          if (error) {
+            console.error("Error checking group membership:", error);
+          }
+
+          setIsMember(!!membership && ['admin', 'member'].includes(membership.role));
+        } catch (error) {
+          console.error("Error in group route guard:", error);
         }
-
-        setIsMember(!!membership && ['admin', 'member'].includes(membership.role));
       }
 
       setLoading(false);

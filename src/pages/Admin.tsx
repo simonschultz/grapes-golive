@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -271,6 +272,16 @@ const Admin = () => {
         return group;
       })
     );
+    
+    // Update the featured groups list immediately
+    if (featuredGroupIds.includes(groupId)) {
+      setFeaturedGroups(prev => prev.filter(group => group.id !== groupId));
+    } else {
+      const groupToAdd = publicGroups.find(g => g.id === groupId);
+      if (groupToAdd) {
+        setFeaturedGroups(prev => [...prev, {...groupToAdd, featured: true}]);
+      }
+    }
   };
 
   const saveFeaturedGroups = async () => {
