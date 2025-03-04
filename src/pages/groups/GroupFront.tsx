@@ -92,7 +92,7 @@ const GroupFront = () => {
   const canEdit = userRole === 'admin' || group.created_by === currentUserId;
 
   return (
-    <AppLayout showFooter={false}>
+    <AppLayout>
       <div className="min-h-screen bg-gray-50">
         <GroupHeader 
           title={group.title}

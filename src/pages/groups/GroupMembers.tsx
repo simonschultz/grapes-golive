@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Settings } from "lucide-react";
@@ -259,7 +260,7 @@ const GroupMembers = () => {
   const isAdmin = userRole === 'admin' || group.created_by === currentUserId;
 
   return (
-    <AppLayout showFooter={false}>
+    <AppLayout>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <header className="bg-white border-b">
           <div className="max-w-3xl mx-auto">

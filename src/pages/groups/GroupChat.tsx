@@ -301,7 +301,7 @@ const GroupChat = () => {
   if (!group) return null;
 
   return (
-    <AppLayout showFooter={false}>
+    <AppLayout>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <header className="bg-white border-b">
           <div className="max-w-3xl mx-auto">
