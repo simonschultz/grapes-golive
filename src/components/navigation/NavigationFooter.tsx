@@ -9,7 +9,7 @@ export const NavigationFooter = () => {
   const hasUnread = useUnreadNotifications();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 border-t bg-white z-30 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 border-t bg-white z-50 md:hidden">
       <div className="flex justify-around items-center h-16">
         <Button variant="ghost" className="flex flex-col items-center gap-1 h-full" onClick={() => navigate('/front')}>
           <Home className="h-5 w-5 text-[#000080] fill-[#000080]" />
