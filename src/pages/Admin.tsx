@@ -76,7 +76,14 @@ const Admin = () => {
           return;
         }
 
-        const featuredIds = adminSettings?.value?.group_ids || [];
+        // Fix for the TypeScript error - properly access the group_ids property from the JSON value
+        let featuredIds: string[] = [];
+        if (adminSettings?.value) {
+          // Check if value is an object with group_ids property
+          const valueObj = adminSettings.value as Record<string, any>;
+          featuredIds = Array.isArray(valueObj.group_ids) ? valueObj.group_ids : [];
+        }
+        
         setFeaturedGroupIds(featuredIds);
 
         // Fetch all public groups
