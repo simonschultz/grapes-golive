@@ -142,10 +142,10 @@ const GroupCalendar = () => {
   if (!group) return null;
 
   return (
-    <AppLayout showFooter={false}>
+    <AppLayout>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <header className="bg-white border-b">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-5xl mx-auto w-full">
             <div className="p-4 flex items-center justify-between">
               <h1 className="text-xl font-semibold">{group.title}</h1>
               <div className="flex items-center gap-2">
@@ -163,7 +163,7 @@ const GroupCalendar = () => {
 
         <GroupNavigation slug={slug || ''} userRole={userRole} />
 
-        <main className="flex-1 max-w-3xl mx-auto px-4 py-6 mb-16">
+        <main className="flex-1 max-w-5xl mx-auto px-4 py-6 mb-16 w-full">
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-6">Group Events</h2>
 

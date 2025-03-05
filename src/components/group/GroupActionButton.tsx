@@ -20,9 +20,10 @@ interface GroupActionButtonProps {
     image_url: string | null;
   };
   userRole: string | null;
+  showInline?: boolean;
 }
 
-export const GroupActionButton = ({ group, userRole }: GroupActionButtonProps) => {
+export const GroupActionButton = ({ group, userRole, showInline = false }: GroupActionButtonProps) => {
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const navigate = useNavigate();
@@ -106,26 +107,43 @@ export const GroupActionButton = ({ group, userRole }: GroupActionButtonProps) =
   if (userRole) {
     return (
       <>
-        <div className="fixed bottom-20 left-0 right-0 flex justify-center gap-6">
-          <button
-            onClick={() => setIsShareDialogOpen(true)}
-            className={cn(
-              "text-[#221F26] hover:text-[#000080] transition-colors",
-              "font-medium text-sm"
-            )}
-          >
-            Share group
-          </button>
-          <button
-            onClick={() => setIsLeaveDialogOpen(true)}
-            className={cn(
-              "text-red-600 hover:text-red-800 transition-colors",
-              "font-medium text-sm"
-            )}
-          >
-            Leave Group
-          </button>
-        </div>
+        {showInline ? (
+          <div className="flex flex-col items-center gap-3 mt-6 mb-8">
+            <Button
+              onClick={() => setIsShareDialogOpen(true)}
+              className="bg-[#000080] hover:bg-[#000060] text-white w-full max-w-xs"
+            >
+              Share group
+            </Button>
+            <button
+              onClick={() => setIsLeaveDialogOpen(true)}
+              className="text-red-600 hover:text-red-800 transition-colors font-medium text-sm"
+            >
+              Leave Group
+            </button>
+          </div>
+        ) : (
+          <div className="fixed bottom-20 left-0 right-0 flex justify-center gap-6">
+            <button
+              onClick={() => setIsShareDialogOpen(true)}
+              className={cn(
+                "text-[#221F26] hover:text-[#000080] transition-colors",
+                "font-medium text-sm"
+              )}
+            >
+              Share group
+            </button>
+            <button
+              onClick={() => setIsLeaveDialogOpen(true)}
+              className={cn(
+                "text-red-600 hover:text-red-800 transition-colors",
+                "font-medium text-sm"
+              )}
+            >
+              Leave Group
+            </button>
+          </div>
+        )}
 
         <AlertDialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>
           <AlertDialogContent>

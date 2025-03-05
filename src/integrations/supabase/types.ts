@@ -472,6 +472,12 @@ export type Database = {
         }
         Returns: number
       }
+      is_admin: {
+        Args: {
+          user_email: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       attendance_status: "yes" | "no" | "maybe"

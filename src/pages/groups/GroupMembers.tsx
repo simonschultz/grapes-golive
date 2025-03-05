@@ -12,7 +12,7 @@ import { GroupNavigation } from "@/components/group/GroupNavigation";
 interface GroupMember {
   user_id: string;
   role: string;
-  created_at: string; // Changed from joined_at to created_at to match database schema
+  created_at: string;
   profiles: {
     first_name: string | null;
     last_name: string | null;
@@ -77,7 +77,6 @@ const GroupMembers = () => {
 
         setUserRole(memberData.role);
 
-        // Fetch members - updated to use created_at instead of joined_at
         const { data: membersData, error: membersError } = await supabase
           .from('group_members')
           .select(`
@@ -97,7 +96,6 @@ const GroupMembers = () => {
         if (membersError) throw membersError;
         setMembers(membersData || []);
 
-        // Fetch join requests if the user is an admin - updated to use created_at
         if (memberData.role === 'admin' || groupData.created_by === user.id) {
           const { data: requestsData, error: requestsError } = await supabase
             .from('group_members')
@@ -149,7 +147,6 @@ const GroupMembers = () => {
         description: "User added to the group",
       });
 
-      // Update local state
       setRequests(prev => prev.filter(r => r.user_id !== userId));
       const approvedUser = requests.find(r => r.user_id === userId);
       if (approvedUser) {
@@ -182,7 +179,6 @@ const GroupMembers = () => {
         description: "Join request rejected",
       });
 
-      // Update local state
       setRequests(prev => prev.filter(r => r.user_id !== userId));
     } catch (error: any) {
       toast({
@@ -210,7 +206,6 @@ const GroupMembers = () => {
         description: "User promoted to admin",
       });
 
-      // Update local state
       setMembers(prev => prev.map(member => 
         member.user_id === userId 
           ? { ...member, role: 'admin' } 
@@ -242,7 +237,6 @@ const GroupMembers = () => {
         description: "Member removed from group",
       });
 
-      // Update local state
       setMembers(prev => prev.filter(member => member.user_id !== userId));
     } catch (error: any) {
       toast({
@@ -266,12 +260,12 @@ const GroupMembers = () => {
   const isAdmin = userRole === 'admin' || group.created_by === currentUserId;
 
   return (
-    <AppLayout showFooter={false}>
+    <AppLayout>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <header className="bg-white border-b">
           <div className="max-w-3xl mx-auto">
-            <div className="p-4 flex items-center justify-between">
-              <h1 className="text-xl font-semibold">{group.title}</h1>
+            <div className="px-3 sm:px-4 py-4 flex items-center justify-between">
+              <h1 className="text-xl font-semibold">{group?.title}</h1>
               <Button 
                 variant="ghost" 
                 size="icon"
@@ -285,23 +279,23 @@ const GroupMembers = () => {
 
         <GroupNavigation slug={slug || ''} userRole={userRole} />
 
-        <main className="flex-1 max-w-3xl mx-auto px-4 py-6">
+        <main className="flex-1 max-w-4xl mx-auto px-3 sm:px-4 py-6 w-full">
           <div className="bg-white rounded-lg shadow">
             <div className="p-6">
               <h2 className="text-xl font-semibold mb-4">Members</h2>
               
               <div className="space-y-4">
                 {members.map((member) => (
-                  <div key={member.user_id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
+                  <div key={member.user_id} className="flex items-center justify-between p-3 border rounded-md w-full">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-12 w-12">
                         <AvatarImage src={member.profiles.avatar_url || undefined} />
                         <AvatarFallback>
                           {member.profiles.first_name?.[0]?.toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">
+                        <div className="font-medium text-lg">
                           {member.profiles.first_name} {member.profiles.last_name}
                         </div>
                         <div className="text-sm text-muted-foreground">
@@ -342,15 +336,15 @@ const GroupMembers = () => {
                 
                 <div className="space-y-4">
                   {requests.map((request) => (
-                    <div key={request.user_id} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
+                    <div key={request.user_id} className="flex items-center justify-between p-3 border rounded-md w-full">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-12 w-12">
                           <AvatarImage src={request.profiles.avatar_url || undefined} />
                           <AvatarFallback>
                             {request.profiles.first_name?.[0]?.toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="font-medium">
+                        <div className="font-medium text-lg">
                           {request.profiles.first_name} {request.profiles.last_name}
                         </div>
                       </div>
@@ -360,6 +354,7 @@ const GroupMembers = () => {
                           variant="default" 
                           size="sm"
                           onClick={() => handleApproveJoinRequest(request.user_id)}
+                          className="bg-[#000080] hover:bg-[#000080]/90"
                         >
                           Approve
                         </Button>

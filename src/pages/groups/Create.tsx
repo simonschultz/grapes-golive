@@ -106,7 +106,7 @@ const CreateGroup = () => {
         title: "Success",
         description: "Group created successfully",
       });
-      navigate(`/groups/${slug}/front`);
+      navigate(`/groups/${slug}/front?new=true`);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -194,6 +194,7 @@ const CreateGroup = () => {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your group"
               rows={4}
+              className="text-base md:text-sm"
             />
           </div>
 
@@ -219,7 +220,7 @@ const CreateGroup = () => {
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full bg-[#000080] hover:bg-[#000080]/90"
             disabled={isLoading || !title || !slug}
           >
             {isLoading ? "Creating..." : "Create Group"}

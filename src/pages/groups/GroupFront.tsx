@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { GroupHeader } from "@/components/group/GroupHeader";
 import { GroupNavigation } from "@/components/group/GroupNavigation";
@@ -23,11 +23,15 @@ interface GroupData {
 const GroupFront = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [group, setGroup] = useState<GroupData | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Check if user just created this group
+  const justCreated = new URLSearchParams(location.search).get("new") === "true";
 
   useEffect(() => {
     const fetchGroupData = async () => {
@@ -92,7 +96,7 @@ const GroupFront = () => {
   const canEdit = userRole === 'admin' || group.created_by === currentUserId;
 
   return (
-    <AppLayout showFooter={false}>
+    <AppLayout>
       <div className="min-h-screen bg-gray-50">
         <GroupHeader 
           title={group.title}
@@ -102,7 +106,7 @@ const GroupFront = () => {
           slug={group.slug} 
           userRole={userRole}
         />
-        <main className="max-w-3xl mx-auto p-4 pb-24">
+        <main className="max-w-full md:max-w-3xl mx-auto px-2 sm:px-4 pb-24">
           <div className="bg-white rounded-lg shadow">
             <GroupInfo 
               title={group.title}
@@ -110,7 +114,7 @@ const GroupFront = () => {
               isPrivate={group.is_private}
             />
             {canEdit && (
-              <div className="p-4 border-t">
+              <div className="p-3 sm:p-4 border-t">
                 <Button
                   variant="outline"
                   className="w-full"
@@ -120,9 +124,29 @@ const GroupFront = () => {
                 </Button>
               </div>
             )}
+            
+            {justCreated && (
+              <div className="p-3 sm:p-4 border-t">
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+                  <h3 className="font-semibold text-[#000080] mb-1">Congratulations!</h3>
+                  <p className="text-gray-700">Your group is created. You can now share it just by distributing a link.</p>
+                </div>
+              </div>
+            )}
+
+            {userRole && (
+              <div className="p-3 sm:p-4 border-t">
+                <GroupActionButton 
+                  group={group} 
+                  userRole={userRole} 
+                  showInline={true} 
+                />
+              </div>
+            )}
           </div>
         </main>
-        <GroupActionButton group={group} userRole={userRole} />
+        
+        {!userRole && <GroupActionButton group={group} userRole={userRole} />}
       </div>
     </AppLayout>
   );
