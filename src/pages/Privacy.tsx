@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const Privacy = () => {
   return (
-    <div className="min-h-screen bg-[#F2FCE2] p-6">
+    <div className="min-h-screen bg-[#FFDEE2] p-6">
       <Link to="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-8">
         <ChevronLeft className="h-4 w-4 mr-1" />
         Back to frontpage
