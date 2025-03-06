@@ -13,11 +13,11 @@ export const GroupNavigation = ({ slug, userRole }: GroupNavigationProps) => {
 
   return (
     <nav className="bg-white border-b sticky top-0 z-10">
-      <div className="max-w-full md:max-w-3xl mx-auto px-1 sm:px-4">
+      <div className="max-w-full md:max-w-3xl mx-auto px-0 sm:px-4">
         <div className="flex justify-between">
           <Button 
             variant="ghost" 
-            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2"
+            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2 flex-1"
             onClick={() => navigate(`/groups/${slug}/front`)}
           >
             <Home className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1 sm:mr-2 md:mr-3" />
@@ -25,7 +25,7 @@ export const GroupNavigation = ({ slug, userRole }: GroupNavigationProps) => {
           </Button>
           <Button 
             variant="ghost" 
-            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2"
+            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2 flex-1"
             onClick={() => navigate(`/groups/${slug}/chat`)}
           >
             <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1 sm:mr-2 md:mr-3" />
@@ -33,7 +33,7 @@ export const GroupNavigation = ({ slug, userRole }: GroupNavigationProps) => {
           </Button>
           <Button 
             variant="ghost" 
-            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2"
+            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2 flex-1"
             onClick={() => navigate(`/groups/${slug}/calendar`)}
           >
             <Calendar className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1 sm:mr-2 md:mr-3" />
@@ -41,7 +41,7 @@ export const GroupNavigation = ({ slug, userRole }: GroupNavigationProps) => {
           </Button>
           <Button 
             variant="ghost" 
-            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2"
+            className="py-3 px-1 sm:py-4 md:py-6 sm:px-2 flex-1"
             onClick={() => navigate(`/groups/${slug}/members`)}
           >
             <Users className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mr-1 sm:mr-2 md:mr-3" />
