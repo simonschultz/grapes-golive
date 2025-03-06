@@ -1,13 +1,22 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Settings } from "lucide-react";
+import { Settings, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { GroupNavigation } from "@/components/group/GroupNavigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface GroupMember {
   user_id: string;
@@ -36,6 +45,8 @@ const GroupMembers = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [selectedMember, setSelectedMember] = useState<GroupMember | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchGroupData = async () => {
@@ -211,6 +222,8 @@ const GroupMembers = () => {
           ? { ...member, role: 'admin' } 
           : member
       ));
+      
+      setDialogOpen(false);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -238,6 +251,7 @@ const GroupMembers = () => {
       });
 
       setMembers(prev => prev.filter(member => member.user_id !== userId));
+      setDialogOpen(false);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -245,6 +259,11 @@ const GroupMembers = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const openMemberDialog = (member: GroupMember) => {
+    setSelectedMember(member);
+    setDialogOpen(true);
   };
 
   if (isLoading) {
@@ -279,51 +298,39 @@ const GroupMembers = () => {
 
         <GroupNavigation slug={slug || ''} userRole={userRole} />
 
-        <main className="flex-1 max-w-4xl mx-auto px-3 sm:px-4 py-6 w-full">
+        <main className="flex-1 max-w-3xl mx-auto px-3 sm:px-4 py-6 w-full">
           <div className="bg-white rounded-lg shadow">
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <h2 className="text-xl font-semibold mb-4">Members</h2>
               
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {members.map((member) => (
-                  <div key={member.user_id} className="flex items-center justify-between p-3 border rounded-md w-full">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-12 w-12">
+                  <div 
+                    key={member.user_id} 
+                    className="flex items-center justify-between p-2 sm:p-3 border rounded-md w-full"
+                    onClick={() => isAdmin && member.user_id !== currentUserId && openMemberDialog(member)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                         <AvatarImage src={member.profiles.avatar_url || undefined} />
                         <AvatarFallback>
                           {member.profiles.first_name?.[0]?.toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium text-lg">
+                        <div className="font-medium text-base sm:text-lg">
                           {member.profiles.first_name} {member.profiles.last_name}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-xs sm:text-sm text-muted-foreground">
                           {member.role === 'admin' ? 'Admin' : 'Member'}
                         </div>
                       </div>
                     </div>
                     
                     {isAdmin && member.user_id !== currentUserId && (
-                      <div className="flex gap-2">
-                        {member.role !== 'admin' && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handlePromoteToAdmin(member.user_id)}
-                          >
-                            Make Admin
-                          </Button>
-                        )}
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
-                          onClick={() => handleRemoveMember(member.user_id)}
-                        >
-                          Remove
-                        </Button>
-                      </div>
+                      <Button variant="ghost" size="icon" className="shrink-0">
+                        <MoreVertical className="h-5 w-5" />
+                      </Button>
                     )}
                   </div>
                 ))}
@@ -331,20 +338,20 @@ const GroupMembers = () => {
             </div>
             
             {isAdmin && requests.length > 0 && (
-              <div className="border-t p-6">
+              <div className="border-t p-4 sm:p-6">
                 <h2 className="text-xl font-semibold mb-4">Join Requests</h2>
                 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {requests.map((request) => (
-                    <div key={request.user_id} className="flex items-center justify-between p-3 border rounded-md w-full">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-12 w-12">
+                    <div key={request.user_id} className="flex items-center justify-between p-2 sm:p-3 border rounded-md w-full">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                           <AvatarImage src={request.profiles.avatar_url || undefined} />
                           <AvatarFallback>
                             {request.profiles.first_name?.[0]?.toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="font-medium text-lg">
+                        <div className="font-medium text-base sm:text-lg">
                           {request.profiles.first_name} {request.profiles.last_name}
                         </div>
                       </div>
@@ -375,6 +382,47 @@ const GroupMembers = () => {
           </div>
         </main>
       </div>
+
+      {/* Member Actions Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Member Actions</DialogTitle>
+            <DialogDescription>
+              {selectedMember && `${selectedMember.profiles.first_name} ${selectedMember.profiles.last_name}`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col gap-3 py-4">
+            {selectedMember && selectedMember.role !== 'admin' && (
+              <Button 
+                variant="outline" 
+                onClick={() => handlePromoteToAdmin(selectedMember.user_id)}
+                className="justify-start"
+              >
+                Make Admin
+              </Button>
+            )}
+            
+            <Button 
+              variant="outline" 
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 justify-start"
+              onClick={() => selectedMember && handleRemoveMember(selectedMember.user_id)}
+            >
+              Remove from Group
+            </Button>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
