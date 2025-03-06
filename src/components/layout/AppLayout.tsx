@@ -12,12 +12,6 @@ interface AppLayoutProps {
 export const AppLayout = ({ children, showFooter = true }: AppLayoutProps) => {
   const location = useLocation();
   
-  // Determine if we're in a group detail page
-  const isGroupDetailPage = location.pathname.match(/\/groups\/[^\/]+\/[^\/]+/);
-  
-  // Show footer if not explicitly disabled
-  const shouldShowFooter = showFooter;
-  
   return (
     <div className="flex min-h-screen bg-gray-50">
       <DesktopSidebar />
@@ -27,7 +21,7 @@ export const AppLayout = ({ children, showFooter = true }: AppLayoutProps) => {
           {children}
         </main>
         
-        {shouldShowFooter && <NavigationFooter />}
+        {showFooter && <NavigationFooter />}
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MessageSquare, Send, ImagePlus, MoreHorizontal } from "lucide-react";
@@ -323,12 +324,12 @@ const GroupChat = () => {
   if (!group) return null;
 
   return (
-    <AppLayout>
+    <AppLayout showFooter={false}>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <header className="bg-white border-b">
           <div className="max-w-3xl mx-auto">
             <div className="p-4 flex items-center justify-between">
-              <h1 className="text-xl font-semibold">{group.title}</h1>
+              <h1 className="text-xl font-semibold">{group?.title}</h1>
               <Button 
                 variant="ghost" 
                 size="icon"
@@ -342,7 +343,7 @@ const GroupChat = () => {
 
         <GroupNavigation slug={slug || ''} userRole={userRole} />
 
-        <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-6 pb-40 overflow-y-auto">
+        <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-6 pb-32 overflow-y-auto">
           <div className="space-y-4">
             {messages.map((message) => (
               <div
@@ -434,7 +435,7 @@ const GroupChat = () => {
           </AlertDialogContent>
         </AlertDialog>
 
-        <div className="fixed bottom-0 left-0 right-0 md:left-64 bg-white border-t p-4">
+        <div className="fixed bottom-0 left-0 right-0 md:left-64 bg-white border-t p-4 z-50">
           <div className="max-w-3xl mx-auto">
             <div className="flex gap-2">
               <Textarea
@@ -475,6 +476,9 @@ const GroupChat = () => {
           </div>
         </div>
       </div>
+
+      {/* Display a static navigation footer with appropriate spacing */}
+      <div className="h-16 md:hidden"></div>
     </AppLayout>
   );
 };
