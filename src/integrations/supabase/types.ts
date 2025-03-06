@@ -516,6 +516,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_group_admin: {
+        Args: {
+          group_id: string
+          user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       attendance_status: "yes" | "no" | "maybe"
