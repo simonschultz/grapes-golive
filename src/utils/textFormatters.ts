@@ -15,29 +15,37 @@ export const formatTextWithLinks = (text: string): React.ReactNode => {
   // If no URLs found, return the original text
   if (!text.match(urlRegex)) return text;
   
-  const parts = text.split(urlRegex);
-  const matches = text.match(urlRegex) || [];
   const result: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
   
-  // Build the array of text and links
-  for (let i = 0; i < parts.length; i++) {
-    // Add text part if it exists
-    if (parts[i]) {
-      result.push(parts[i]);
+  // Use regex.exec to get each match with its position
+  while ((match = urlRegex.exec(text)) !== null) {
+    // Add text before the URL
+    const beforeUrl = text.substring(lastIndex, match.index);
+    if (beforeUrl) {
+      result.push(beforeUrl);
     }
     
-    // Add link part if it exists
-    if (i < matches.length) {
-      result.push(
-        React.createElement('a', {
-          key: `link-${i}`,
-          href: matches[i],
-          target: "_blank",
-          rel: "noopener noreferrer",
-          className: "underline break-all"
-        }, matches[i])
-      );
-    }
+    // Add the URL as a link
+    result.push(
+      React.createElement('a', {
+        key: `link-${match.index}`,
+        href: match[0],
+        target: "_blank",
+        rel: "noopener noreferrer",
+        className: "underline break-all"
+      }, match[0])
+    );
+    
+    // Update lastIndex to after this URL
+    lastIndex = urlRegex.lastIndex;
+  }
+  
+  // Add any remaining text after the last URL
+  const afterLastUrl = text.substring(lastIndex);
+  if (afterLastUrl) {
+    result.push(afterLastUrl);
   }
   
   return result;
