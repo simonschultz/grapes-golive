@@ -33,15 +33,13 @@ export const formatTextWithLinks = (text: string): React.ReactNode => {
     // Add the URL part if it exists
     if (matches[i]) {
       result.push(
-        <a 
-          key={`link-${i}`} 
-          href={matches[i]} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="text-blue-500 underline break-all"
-        >
-          {matches[i]}
-        </a>
+        React.createElement('a', {
+          key: `link-${i}`,
+          href: matches[i],
+          target: "_blank",
+          rel: "noopener noreferrer",
+          className: "text-blue-500 underline break-all"
+        }, matches[i])
       );
     }
   });
