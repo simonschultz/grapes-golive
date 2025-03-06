@@ -1,11 +1,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, X, HelpCircle, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, Check, X, HelpCircle, Calendar, MapPin, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { GroupHeader } from "@/components/group/GroupHeader";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface GroupEvent {
   id: string;
@@ -19,12 +21,19 @@ interface GroupEvent {
   group_id: string;
 }
 
+interface GroupData {
+  id: string;
+  title: string;
+  image_url: string | null;
+}
+
 interface Attendance {
   user_id: string;
   status: 'yes' | 'no' | 'maybe';
   profiles: {
     first_name: string | null;
     last_name: string | null;
+    avatar_url: string | null;
   };
 }
 
@@ -33,6 +42,7 @@ const GroupEventOverview = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [event, setEvent] = useState<GroupEvent | null>(null);
+  const [group, setGroup] = useState<GroupData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [attendanceList, setAttendanceList] = useState<Attendance[]>([]);
   const [userAttendance, setUserAttendance] = useState<'yes' | 'no' | 'maybe' | null>(null);
@@ -62,7 +72,17 @@ const GroupEventOverview = () => {
 
         setEvent(eventData);
 
-        // Fetch attendance list
+        // Fetch group details including image
+        const { data: groupData, error: groupError } = await supabase
+          .from('groups')
+          .select('id, title, image_url')
+          .eq('id', eventData.group_id)
+          .maybeSingle();
+          
+        if (groupError) throw groupError;
+        setGroup(groupData);
+
+        // Fetch attendance list with profile images
         const { data: attendanceData, error: attendanceError } = await supabase
           .from('group_event_attendance')
           .select(`
@@ -70,7 +90,8 @@ const GroupEventOverview = () => {
             status,
             profiles (
               first_name,
-              last_name
+              last_name,
+              avatar_url
             )
           `)
           .eq('event_id', id);
@@ -186,7 +207,7 @@ const GroupEventOverview = () => {
     );
   }
 
-  if (!event) return null;
+  if (!event || !group) return null;
 
   // Format date display - handle multi-day events
   const formatEventDate = () => {
@@ -200,8 +221,16 @@ const GroupEventOverview = () => {
     return format(startDate, 'EEEE, MMMM d, yyyy');
   };
 
+  // Get initials for avatar fallback
+  const getInitials = (firstName: string | null, lastName: string | null) => {
+    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Add Group Header with image */}
+      <GroupHeader imageUrl={group.image_url} title={group.title} />
+
       <header className="bg-white border-b">
         <div className="max-w-3xl mx-auto">
           <div className="p-4">
@@ -285,24 +314,44 @@ const GroupEventOverview = () => {
 
             <div className="border-t pt-6">
               <h2 className="text-lg font-medium mb-4">Who's going?</h2>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {['yes', 'maybe', 'no'].map((status) => {
                   const statusAttendees = attendanceList.filter(a => a.status === status);
                   if (statusAttendees.length === 0) return null;
 
                   return (
                     <div key={status}>
-                      <h3 className="text-sm font-medium text-gray-500 mb-2">
+                      <h3 className="text-sm font-medium text-gray-500 mb-3">
                         {status === 'yes' ? 'Going' : 
                          status === 'maybe' ? 'Maybe' : 
                          'Not going'} ({statusAttendees.length})
                       </h3>
-                      <div className="space-y-2">
-                        {statusAttendees.map((attendance) => (
-                          <div key={attendance.user_id} className="text-sm">
-                            {attendance.profiles.first_name} {attendance.profiles.last_name}
-                          </div>
-                        ))}
+                      
+                      {/* Enhance the attendees list with profile images */}
+                      <div className={`${status === 'no' ? 'opacity-60' : ''}`}>
+                        <div className="flex flex-wrap gap-4">
+                          {statusAttendees.map((attendance) => (
+                            <div key={attendance.user_id} className="flex flex-col items-center">
+                              <Avatar className="w-12 h-12 mb-1">
+                                {attendance.profiles.avatar_url ? (
+                                  <AvatarImage 
+                                    src={supabase.storage.from('avatars').getPublicUrl(attendance.profiles.avatar_url).data.publicUrl} 
+                                    alt={`${attendance.profiles.first_name} ${attendance.profiles.last_name}`} 
+                                  />
+                                ) : (
+                                  <AvatarFallback className="bg-[#000080] text-white">
+                                    {getInitials(attendance.profiles.first_name, attendance.profiles.last_name) || (
+                                      <Users className="h-6 w-6" />
+                                    )}
+                                  </AvatarFallback>
+                                )}
+                              </Avatar>
+                              <span className="text-sm font-medium text-center">
+                                {attendance.profiles.first_name} {attendance.profiles.last_name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   );
