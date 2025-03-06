@@ -174,7 +174,7 @@ const GroupEventOverview = () => {
         });
       }
 
-      // Refresh attendance list
+      // Refresh attendance list - make sure to include avatar_url in the select
       const { data: attendanceData } = await supabase
         .from('group_event_attendance')
         .select(`
@@ -182,7 +182,8 @@ const GroupEventOverview = () => {
           status,
           profiles (
             first_name,
-            last_name
+            last_name,
+            avatar_url
           )
         `)
         .eq('event_id', id);
@@ -353,7 +354,7 @@ const GroupEventOverview = () => {
                               <Avatar className="w-12 h-12 mb-1">
                                 {attendance.profiles.avatar_url ? (
                                   <AvatarImage 
-                                    src={supabase.storage.from('avatars').getPublicUrl(attendance.profiles.avatar_url).data.publicUrl} 
+                                    src={`${attendance.profiles.avatar_url}`} 
                                     alt={`${attendance.profiles.first_name} ${attendance.profiles.last_name}`} 
                                   />
                                 ) : (
