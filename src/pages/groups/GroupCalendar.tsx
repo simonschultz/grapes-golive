@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Settings, Plus, MapPin } from "lucide-react";
@@ -73,7 +72,6 @@ const GroupCalendar = () => {
         setGroup(groupData);
         setUserRole(memberData.role);
 
-        // Fetch group events
         const { data: eventsData, error: eventsError } = await supabase
           .from('group_events')
           .select('*')
@@ -100,34 +98,26 @@ const GroupCalendar = () => {
     checkAccess();
   }, [slug, navigate, toast]);
 
-  // Function to get color based on event title
   const getEventColor = (eventTitle: string) => {
-    // Simple hash function to generate a consistent color for each event
     const hash = eventTitle.split('').reduce((acc, char) => {
       return char.charCodeAt(0) + ((acc << 5) - acc);
     }, 0);
     
-    // List of attractive blue shades instead of purple
     const colors = [
-      'bg-[#0EA5E9]', // Ocean Blue
-      'bg-[#1EAEDB]', // Bright Blue
-      'bg-[#33C3F0]', // Sky Blue
-      'bg-[#0FA0CE]', // Bright Blue
-      'bg-[#221F26]', // Dark Blue/Charcoal
-      'bg-[#2C5282]', // Navy Blue
-      'bg-[#3B82F6]', // Bright Blue
-      'bg-[#1D4ED8]', // Royal Blue
+      'bg-[#8E9196]',
+      'bg-[#F1F0FB]',
+      'bg-[#C8C8C9]',
+      'bg-[#9F9EA1]',
+      'bg-[#403E43]',
+      'bg-[#F1F1F1]',
     ];
     
-    // Use the hash to select a color from the array
     const colorIndex = Math.abs(hash) % colors.length;
     return colors[colorIndex];
   };
 
-  // Function to get text color based on background color
   const getTextColor = (bgColor: string) => {
-    // Darker backgrounds need white text, lighter ones need dark text
-    const lightBackgrounds = ['bg-[#33C3F0]'];
+    const lightBackgrounds = ['bg-[#F1F0FB]', 'bg-[#F1F1F1]', 'bg-[#C8C8C9]'];
     return lightBackgrounds.includes(bgColor) ? 'text-gray-800' : 'text-white';
   };
 
