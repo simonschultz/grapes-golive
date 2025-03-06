@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, X, HelpCircle, Calendar, MapPin, Users } from "lucide-react";
+import { ArrowLeft, Check, X, HelpCircle, Calendar, MapPin, Users, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ interface GroupEvent {
   title: string;
   description: string | null;
   location: string | null;
+  link: string | null;
   date: string;
   end_date: string | null;
   time_start: string;
@@ -275,6 +276,23 @@ const GroupEventOverview = () => {
                 <div className="flex items-start text-gray-600">
                   <MapPin className="h-5 w-5 mr-2 text-gray-500" />
                   <span>{event.location}</span>
+                </div>
+              </div>
+            )}
+
+            {event.link && (
+              <div>
+                <h2 className="text-lg font-medium mb-2">Link</h2>
+                <div className="flex items-start text-gray-600">
+                  <LinkIcon className="h-5 w-5 mr-2 text-gray-500" />
+                  <a 
+                    href={event.link.startsWith('http') ? event.link : `https://${event.link}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[#000080] hover:underline"
+                  >
+                    {event.link}
+                  </a>
                 </div>
               </div>
             )}

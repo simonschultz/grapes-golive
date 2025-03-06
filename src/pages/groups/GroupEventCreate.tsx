@@ -31,7 +31,7 @@ const GroupEventCreate = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    link: "", // We'll keep the field in the form but not submit it to the database
+    link: "",
     timeStart: "",
     timeEnd: "",
     location: "",
@@ -104,9 +104,10 @@ const GroupEventCreate = () => {
         time_start: formData.timeStart,
         time_end: formData.timeEnd || null,
         group_id: groupData.id,
+        link: formData.link || null,
       });
 
-      // Important: Removed the 'link' field from the insert operation
+      // Now including the link field in the insert operation
       const { data: eventData, error: eventError } = await supabase
         .from('group_events')
         .insert([
@@ -118,6 +119,7 @@ const GroupEventCreate = () => {
             time_start: formData.timeStart,
             time_end: formData.timeEnd || null,
             location: formData.location || null,
+            link: formData.link || null,
             group_id: groupData.id,
             created_by: user.id,
           }
