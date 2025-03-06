@@ -219,7 +219,7 @@ const Front = () => {
               <img 
                 src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
                 alt="Grapes Logo" 
-                className="h-5 w-5 mr-2"
+                className="h-7 w-7 mr-2"
               />
               <h1 className="text-xl font-semibold">Grapes</h1>
             </div>
