@@ -379,6 +379,7 @@ const GroupChat = () => {
   const handleReaction = async (messageId: string, reactionType: string, isActive: boolean) => {
     try {
       if (isActive) {
+        console.log(`Removing ${reactionType} reaction for message ${messageId}`);
         const { error } = await supabase
           .from('message_reactions')
           .delete()
@@ -386,8 +387,12 @@ const GroupChat = () => {
           .eq('user_id', currentUser)
           .eq('reaction_type', reactionType);
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error removing reaction:', error);
+          throw error;
+        }
       } else {
+        console.log(`Adding ${reactionType} reaction for message ${messageId}`);
         const { error } = await supabase
           .from('message_reactions')
           .insert({
@@ -396,7 +401,10 @@ const GroupChat = () => {
             reaction_type: reactionType
           });
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error adding reaction:', error);
+          throw error;
+        }
       }
     } catch (error: any) {
       console.error('Error handling reaction:', error);
