@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MessageSquare, Send, ImagePlus, MoreHorizontal } from "lucide-react";
@@ -21,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { GroupNavigation } from "@/components/group/GroupNavigation";
 import { format, formatDistance } from "date-fns";
+import { formatTextWithLinks } from "@/utils/textFormatters";
 
 interface Message {
   id: string;
@@ -400,7 +400,9 @@ const GroupChat = () => {
                       />
                     )}
                     {message.content && (
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      <div className="whitespace-pre-wrap">
+                        {formatTextWithLinks(message.content)}
+                      </div>
                     )}
                   </div>
                   <p className={`text-xs mt-1 ${
@@ -477,7 +479,6 @@ const GroupChat = () => {
         </div>
       </div>
 
-      {/* Display a static navigation footer with appropriate spacing */}
       <div className="h-16 md:hidden"></div>
     </AppLayout>
   );
