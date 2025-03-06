@@ -26,6 +26,12 @@ const MessageReaction: React.FC<MessageReactionProps> = ({
 }) => {
   const Icon = reactionIcons[type];
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClick();
+  };
+
   return (
     <button
       className={cn(
@@ -34,7 +40,7 @@ const MessageReaction: React.FC<MessageReactionProps> = ({
           ? "bg-[#D3E4FD] text-[#000080]"
           : "bg-[#F1F0FB] text-gray-500 hover:bg-[#E3E2F9]"
       )}
-      onClick={onClick}
+      onClick={handleClick}
     >
       <Icon className="h-3 w-3" />
       {count > 0 && <span>{count}</span>}
