@@ -24,6 +24,27 @@ const Activity = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   
+  // Function to mark all notifications as read
+  const markAllAsRead = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', userId)
+        .eq('read', false);
+      
+      if (error) throw error;
+      
+      // Update local state to reflect all notifications are read
+      setNotifications(notifications.map(notification => ({
+        ...notification,
+        read: true
+      })));
+    } catch (err) {
+      console.error("Error marking all notifications as read:", err);
+    }
+  };
+  
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -55,6 +76,9 @@ const Activity = () => {
         }));
         
         setNotifications(notificationsWithSlug);
+        
+        // Mark all notifications as read when the page loads
+        await markAllAsRead(user.id);
       } catch (err) {
         console.error("Error fetching notifications:", err);
         setError(err instanceof Error ? err.message : "Failed to load notifications");
