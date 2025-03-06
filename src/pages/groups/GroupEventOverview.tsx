@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, X, HelpCircle, Calendar, MapPin, Users, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Check, X, HelpCircle, Calendar, MapPin, Users, Link as LinkIcon, ThumbsUp, ThumbsDown, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -331,22 +331,34 @@ const GroupEventOverview = () => {
               </div>
             </div>
 
-            <div className="border-t pt-6">
-              <h2 className="text-lg font-medium mb-4">Who's going?</h2>
-              <div className="space-y-6">
+            <div className="border-t pt-6 space-y-8">
+              {/* Removed the "Who's going?" header */}
+              <div className="space-y-8">
                 {['yes', 'maybe', 'no'].map((status) => {
                   const statusAttendees = attendanceList.filter(a => a.status === status);
                   if (statusAttendees.length === 0) return null;
 
                   return (
-                    <div key={status}>
-                      <h3 className="text-sm font-medium text-gray-500 mb-3">
-                        {status === 'yes' ? 'Going' : 
-                         status === 'maybe' ? 'Maybe' : 
-                         'Not going'} ({statusAttendees.length})
+                    <div key={status} className="animate-fade-in">
+                      <h3 className="text-xl font-bold mb-4 flex items-center text-[#000080]">
+                        {status === 'yes' ? (
+                          <>
+                            <ThumbsUp className="h-6 w-6 mr-2" />
+                            Going
+                          </>
+                        ) : status === 'maybe' ? (
+                          <>
+                            <User className="h-6 w-6 mr-2" />
+                            Maybe
+                          </>
+                        ) : (
+                          <>
+                            <ThumbsDown className="h-6 w-6 mr-2" />
+                            Not going
+                          </>
+                        )} ({statusAttendees.length})
                       </h3>
                       
-                      {/* Enhance the attendees list with profile images */}
                       <div className={`${status === 'no' ? 'opacity-60' : ''}`}>
                         <div className="flex flex-wrap gap-4">
                           {statusAttendees.map((attendance) => (
