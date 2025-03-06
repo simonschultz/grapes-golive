@@ -213,7 +213,7 @@ const Front = () => {
     <AppLayout>
       <div className="flex flex-col min-h-screen bg-white">
         <div className="flex-1 pb-16 md:pb-0">
-          <header className="flex justify-between items-center p-4 border-b md:border-0 md:px-6 md:py-5">
+          <header className="flex justify-center items-center p-4 border-b md:border-0 md:px-6 md:py-5">
             <div className="flex items-center md:hidden">
               <img 
                 src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
@@ -222,7 +222,7 @@ const Front = () => {
               />
               <h1 className="text-xl font-semibold">Grapes</h1>
             </div>
-            <div className="md:invisible md:h-0">
+            <div className="absolute right-4 md:invisible md:h-0">
               <Button variant="ghost" size="icon" className="text-[#000080] md:hidden" onClick={() => navigate('/settings')}>
                 <Settings className="h-5 w-5" />
               </Button>
