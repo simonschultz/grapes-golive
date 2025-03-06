@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MessageSquare, Send, ImagePlus, MoreHorizontal } from "lucide-react";
@@ -104,12 +103,10 @@ const GroupChat = () => {
     };
     
     userReactions.forEach(reaction => {
-      // Increment the count for this reaction type
       if (reactionCounts[reaction.reaction_type] !== undefined) {
         reactionCounts[reaction.reaction_type]++;
       }
       
-      // Mark if the current user has made this reaction
       if (reaction.user_id === currentUser) {
         userReactionMap[reaction.reaction_type] = true;
       }
@@ -160,7 +157,6 @@ const GroupChat = () => {
         setGroup(groupData);
         setUserRole(memberData.role);
 
-        // Fetch messages
         const { data: messagesData, error: messagesError } = await supabase
           .from('messages')
           .select(`
@@ -176,7 +172,6 @@ const GroupChat = () => {
 
         if (messagesError) throw messagesError;
 
-        // Fetch reactions for all messages
         const messagesWithoutReactions = messagesData || [];
         
         if (messagesWithoutReactions.length > 0) {
@@ -189,7 +184,6 @@ const GroupChat = () => {
             
           if (reactionsError) throw reactionsError;
           
-          // Add reactions to messages
           const messagesWithReactions = messagesWithoutReactions.map(message => {
             const messageReactions = (reactionsData || []).filter(
               reaction => reaction.message_id === message.id
@@ -206,7 +200,6 @@ const GroupChat = () => {
           setMessages(messagesWithoutReactions);
         }
 
-        // Listen for new messages
         const channel = supabase
           .channel('group-messages')
           .on(
@@ -258,7 +251,6 @@ const GroupChat = () => {
               setMessages(prev => prev.filter(msg => msg.id !== payload.old.id));
             }
           )
-          // Listen for reaction changes
           .on(
             'postgres_changes',
             {
@@ -277,12 +269,10 @@ const GroupChat = () => {
                       userReactions: { smile: false, meh: false, frown: false }
                     };
                     
-                    // Increment count
                     if (updatedReactions.counts[newReaction.reaction_type] !== undefined) {
                       updatedReactions.counts[newReaction.reaction_type]++;
                     }
                     
-                    // Update user reaction state
                     if (newReaction.user_id === currentUser) {
                       updatedReactions.userReactions[newReaction.reaction_type] = true;
                     }
@@ -309,12 +299,10 @@ const GroupChat = () => {
                   if (message.id === deletedReaction.message_id && message.reactions) {
                     const updatedReactions = { ...message.reactions };
                     
-                    // Decrement count
                     if (updatedReactions.counts[deletedReaction.reaction_type] > 0) {
                       updatedReactions.counts[deletedReaction.reaction_type]--;
                     }
                     
-                    // Update user reaction state
                     if (deletedReaction.user_id === currentUser) {
                       updatedReactions.userReactions[deletedReaction.reaction_type] = false;
                     }
@@ -391,7 +379,6 @@ const GroupChat = () => {
   const handleReaction = async (messageId: string, reactionType: string, isActive: boolean) => {
     try {
       if (isActive) {
-        // Remove reaction
         const { error } = await supabase
           .from('message_reactions')
           .delete()
@@ -401,7 +388,6 @@ const GroupChat = () => {
           
         if (error) throw error;
       } else {
-        // Add reaction
         const { error } = await supabase
           .from('message_reactions')
           .insert({

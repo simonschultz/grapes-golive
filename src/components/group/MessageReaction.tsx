@@ -41,6 +41,8 @@ const MessageReaction: React.FC<MessageReactionProps> = ({
           : "bg-[#F1F0FB] text-gray-500 hover:bg-[#E3E2F9]"
       )}
       onClick={handleClick}
+      aria-pressed={active}
+      title={active ? `Remove ${type} reaction` : `React with ${type}`}
     >
       <Icon className="h-3 w-3" />
       {count > 0 && <span>{count}</span>}
