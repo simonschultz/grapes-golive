@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +36,7 @@ const Calendar = () => {
           return;
         }
         
+        // Fetch events created by the user
         const { data: createdEvents, error: createdError } = await supabase
           .from('group_events')
           .select(`
@@ -52,6 +54,7 @@ const Calendar = () => {
           
         if (createdError) throw createdError;
         
+        // Fetch events the user has RSVP'd to with 'yes' or 'maybe'
         const { data: rsvpEvents, error: rsvpError } = await supabase
           .from('group_event_attendance')
           .select(`
@@ -74,6 +77,10 @@ const Calendar = () => {
           
         if (rsvpError) throw rsvpError;
         
+        console.log("Created events:", createdEvents);
+        console.log("RSVP events:", rsvpEvents);
+        
+        // Format events created by the user
         const formattedCreatedEvents = createdEvents.map(event => ({
           id: event.id,
           title: event.title,
@@ -85,8 +92,9 @@ const Calendar = () => {
           groupName: event.groups?.title || '',
         }));
         
+        // Format events the user has RSVP'd to
         const formattedRsvpEvents = rsvpEvents
-          .filter(item => item.group_events)
+          .filter(item => item.group_events) // Ensure the referenced event exists
           .map(item => ({
             id: item.group_events?.id || '',
             title: item.group_events?.title || '',
@@ -99,6 +107,7 @@ const Calendar = () => {
             status: item.status
           }));
         
+        // Use a Map to deduplicate events (a user might have created an event and also RSVP'd to it)
         const eventMap = new Map();
         
         formattedCreatedEvents.forEach(event => {
@@ -111,6 +120,7 @@ const Calendar = () => {
           }
         });
         
+        // Convert Map back to array and sort by date and time
         let combinedEvents = Array.from(eventMap.values());
         combinedEvents = combinedEvents.sort((a, b) => {
           const dateA = new Date(a.date + 'T' + a.time_start);
@@ -118,7 +128,18 @@ const Calendar = () => {
           return dateA.getTime() - dateB.getTime();
         });
         
-        setEvents(combinedEvents);
+        // Filter out past events
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const upcomingEvents = combinedEvents.filter(event => {
+          const eventDate = new Date(event.date);
+          eventDate.setHours(0, 0, 0, 0);
+          return eventDate >= today;
+        });
+        
+        console.log("Final upcoming events:", upcomingEvents);
+        setEvents(upcomingEvents);
       } catch (error: any) {
         console.error('Error fetching events:', error);
         toast({
