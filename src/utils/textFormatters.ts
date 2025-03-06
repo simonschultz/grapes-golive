@@ -9,7 +9,7 @@ import React from 'react';
 export const formatTextWithLinks = (text: string): React.ReactNode => {
   if (!text) return text;
   
-  // Regular expression to match URLs starting with https://
+  // Regular expression to match URLs starting with http:// or https://
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   
   // If no URLs found, return the original text
