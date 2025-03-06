@@ -586,7 +586,7 @@ const GroupChat = () => {
                     )}
                   </div>
                   <div className="flex mt-1 gap-1">
-                    {message.reactions && (
+                    {message.reactions && message.user_id !== currentUser && (
                       <>
                         <MessageReaction 
                           type="smile" 
