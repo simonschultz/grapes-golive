@@ -385,8 +385,8 @@ const GroupChat = () => {
                   <div
                     className={`rounded-lg p-3 max-w-[80%] break-words ${
                       message.user_id === currentUser
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                        ? 'bg-blue-500 text-white [&_a]:text-white'
+                        : 'bg-gray-100 text-gray-900 [&_a]:text-gray-900'
                     }`}
                   >
                     <p className="text-sm mb-1">

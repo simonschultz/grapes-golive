@@ -38,7 +38,7 @@ export const formatTextWithLinks = (text: string): React.ReactNode => {
           href: matches[i],
           target: "_blank",
           rel: "noopener noreferrer",
-          className: "text-blue-500 underline break-all"
+          className: "underline break-all" // Removed the blue color class
         }, matches[i])
       );
     }
