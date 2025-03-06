@@ -13,6 +13,7 @@ interface GroupEvent {
   description: string | null;
   location: string | null;
   date: string;
+  end_date: string | null;
   time_start: string;
   time_end: string | null;
   group_id: string;
@@ -187,6 +188,18 @@ const GroupEventOverview = () => {
 
   if (!event) return null;
 
+  // Format date display - handle multi-day events
+  const formatEventDate = () => {
+    const startDate = new Date(event.date);
+    
+    if (event.end_date && event.end_date !== event.date) {
+      const endDate = new Date(event.end_date);
+      return `${format(startDate, 'EEEE, MMMM d, yyyy')} - ${format(endDate, 'EEEE, MMMM d, yyyy')}`;
+    }
+    
+    return format(startDate, 'EEEE, MMMM d, yyyy');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
@@ -210,7 +223,7 @@ const GroupEventOverview = () => {
           <div className="space-y-6">
             <div>
               <p className="text-lg font-medium">
-                {format(new Date(event.date), 'EEEE, MMMM d, yyyy')}
+                {formatEventDate()}
               </p>
               <p className="text-gray-600">
                 {format(new Date(`2000-01-01T${event.time_start}`), 'h:mm a')}

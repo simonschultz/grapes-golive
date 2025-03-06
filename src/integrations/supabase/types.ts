@@ -99,6 +99,7 @@ export type Database = {
           created_by: string
           date: string
           description: string | null
+          end_date: string | null
           group_id: string
           id: string
           location: string | null
@@ -111,6 +112,7 @@ export type Database = {
           created_by: string
           date: string
           description?: string | null
+          end_date?: string | null
           group_id: string
           id?: string
           location?: string | null
@@ -123,6 +125,7 @@ export type Database = {
           created_by?: string
           date?: string
           description?: string | null
+          end_date?: string | null
           group_id?: string
           id?: string
           location?: string | null

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -98,7 +97,7 @@ const GroupEventCreate = () => {
       const formattedStartDate = startDate.toISOString().split('T')[0];
       
       // Use end date if provided, otherwise use start date
-      const dateToUse = endDate ? endDate.toISOString().split('T')[0] : formattedStartDate;
+      const formattedEndDate = endDate ? endDate.toISOString().split('T')[0] : formattedStartDate;
 
       // Create the event
       const { data: eventData, error: eventError } = await supabase
@@ -109,6 +108,7 @@ const GroupEventCreate = () => {
             description: formData.description,
             link: formData.link || null,
             date: formattedStartDate,
+            end_date: formattedEndDate,
             time_start: formData.timeStart,
             time_end: formData.timeEnd || null,
             location: formData.location || null,
