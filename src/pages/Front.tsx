@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Settings, Shield, MessageSquare, ArrowRight, UserPlus, Calendar, Users, BellRing } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -328,7 +329,7 @@ const Front = () => {
                           {getNotificationIcon(notification.type)}
                         </div>
                         <div>
-                          <p className="text-sm text-white">{notification.message}</p>
+                          <p className="text-sm text-gray-900">{notification.message}</p>
                           <p className="text-xs text-gray-500 mt-1">
                             {format(new Date(notification.created_at), 'MMM d, h:mm a')}
                           </p>
