@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 /**
  * Formats text to convert URLs into clickable links
  * @param text The text to format
