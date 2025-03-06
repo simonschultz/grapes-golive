@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { GroupHeader } from "@/components/group/GroupHeader";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 interface GroupEvent {
   id: string;
@@ -20,6 +21,7 @@ interface GroupEvent {
   time_start: string;
   time_end: string | null;
   group_id: string;
+  created_by: string;
 }
 
 interface GroupData {
@@ -38,6 +40,12 @@ interface Attendance {
   };
 }
 
+interface CreatorProfile {
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+}
+
 const GroupEventOverview = () => {
   const { slug, id } = useParams();
   const navigate = useNavigate();
@@ -48,6 +56,7 @@ const GroupEventOverview = () => {
   const [attendanceList, setAttendanceList] = useState<Attendance[]>([]);
   const [userAttendance, setUserAttendance] = useState<'yes' | 'no' | 'maybe' | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [eventCreator, setEventCreator] = useState<CreatorProfile | null>(null);
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -72,6 +81,16 @@ const GroupEventOverview = () => {
         }
 
         setEvent(eventData);
+
+        // Fetch event creator's profile
+        const { data: creatorData, error: creatorError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, avatar_url')
+          .eq('id', eventData.created_by)
+          .maybeSingle();
+        
+        if (creatorError) throw creatorError;
+        setEventCreator(creatorData);
 
         // Fetch group details including image
         const { data: groupData, error: groupError } = await supabase
@@ -249,7 +268,39 @@ const GroupEventOverview = () => {
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold mb-6 text-[#000080]">{event.title}</h1>
+          <h1 className="text-2xl font-bold mb-3 text-[#000080]">{event.title}</h1>
+          
+          {/* Event Creator and Group Info */}
+          <div className="mb-6">
+            <Card className="border-none shadow-none p-0">
+              <CardContent className="p-0 pb-4">
+                <div className="flex items-center space-x-4">
+                  <Avatar className="w-10 h-10">
+                    {eventCreator?.avatar_url ? (
+                      <AvatarImage 
+                        src={eventCreator.avatar_url} 
+                        alt={`${eventCreator.first_name} ${eventCreator.last_name}`} 
+                      />
+                    ) : (
+                      <AvatarFallback className="bg-[#000080] text-white">
+                        {getInitials(eventCreator?.first_name, eventCreator?.last_name)}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div>
+                    <p className="text-sm text-gray-500">Created by</p>
+                    <p className="font-medium">
+                      {eventCreator?.first_name} {eventCreator?.last_name}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 text-sm">
+                  <span className="text-gray-500">Group: </span>
+                  <span className="font-medium text-[#000080]">{group.title}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           
           <div className="space-y-6">
             <div>

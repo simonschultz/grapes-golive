@@ -21,6 +21,22 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { GroupNavigation } from "@/components/group/GroupNavigation";
 import { format, formatDistance } from "date-fns";
 import { formatTextWithLinks } from "@/utils/textFormatters";
+import MessageReaction from "@/components/group/MessageReaction";
+
+interface Reaction {
+  id: string;
+  reaction_type: string;
+  user_id: string;
+}
+
+interface MessageReactions {
+  [key: string]: number;
+}
+
+interface ReactionsWithUserState {
+  counts: MessageReactions;
+  userReactions: { [key: string]: boolean };
+}
 
 interface Message {
   id: string;
@@ -33,6 +49,7 @@ interface Message {
     last_name: string | null;
     avatar_url: string | null;
   } | null;
+  reactions?: ReactionsWithUserState;
 }
 
 interface GroupData {
@@ -58,12 +75,12 @@ const GroupChat = () => {
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isIOS, setIsIOS] = useState(false);
-
+  
   useEffect(() => {
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     setIsIOS(isIOSDevice);
   }, []);
-
+  
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -71,6 +88,35 @@ const GroupChat = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+  
+  const initReactionsForMessage = (messageId: string, userReactions: Reaction[]) => {
+    const reactionCounts: MessageReactions = {
+      smile: 0,
+      meh: 0,
+      frown: 0,
+    };
+    
+    const userReactionMap: { [key: string]: boolean } = {
+      smile: false,
+      meh: false,
+      frown: false,
+    };
+    
+    userReactions.forEach(reaction => {
+      if (reactionCounts[reaction.reaction_type] !== undefined) {
+        reactionCounts[reaction.reaction_type]++;
+      }
+      
+      if (reaction.user_id === currentUser) {
+        userReactionMap[reaction.reaction_type] = true;
+      }
+    });
+    
+    return {
+      counts: reactionCounts,
+      userReactions: userReactionMap,
+    };
+  };
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -125,7 +171,34 @@ const GroupChat = () => {
           .order('created_at', { ascending: true });
 
         if (messagesError) throw messagesError;
-        setMessages(messagesData || []);
+
+        const messagesWithoutReactions = messagesData || [];
+        
+        if (messagesWithoutReactions.length > 0) {
+          const messageIds = messagesWithoutReactions.map(msg => msg.id);
+          
+          const { data: reactionsData, error: reactionsError } = await supabase
+            .from('message_reactions')
+            .select('*')
+            .in('message_id', messageIds);
+            
+          if (reactionsError) throw reactionsError;
+          
+          const messagesWithReactions = messagesWithoutReactions.map(message => {
+            const messageReactions = (reactionsData || []).filter(
+              reaction => reaction.message_id === message.id
+            );
+            
+            return {
+              ...message,
+              reactions: initReactionsForMessage(message.id, messageReactions)
+            };
+          });
+          
+          setMessages(messagesWithReactions);
+        } else {
+          setMessages(messagesWithoutReactions);
+        }
 
         const channel = supabase
           .channel('group-messages')
@@ -155,7 +228,11 @@ const GroupChat = () => {
                 image_url: payload.new.image_url,
                 user_id: payload.new.user_id,
                 created_at: payload.new.created_at,
-                user: userData
+                user: userData,
+                reactions: {
+                  counts: { smile: 0, meh: 0, frown: 0 },
+                  userReactions: { smile: false, meh: false, frown: false }
+                }
               };
 
               setMessages(prev => [...prev, newMessage]);
@@ -172,6 +249,69 @@ const GroupChat = () => {
             (payload) => {
               console.log('Message deleted:', payload.old.id);
               setMessages(prev => prev.filter(msg => msg.id !== payload.old.id));
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'message_reactions'
+            },
+            (payload) => {
+              const newReaction = payload.new;
+              
+              setMessages(prevMessages => 
+                prevMessages.map(message => {
+                  if (message.id === newReaction.message_id) {
+                    const updatedReactions = message.reactions ? { ...message.reactions } : {
+                      counts: { smile: 0, meh: 0, frown: 0 },
+                      userReactions: { smile: false, meh: false, frown: false }
+                    };
+                    
+                    if (updatedReactions.counts[newReaction.reaction_type] !== undefined) {
+                      updatedReactions.counts[newReaction.reaction_type]++;
+                    }
+                    
+                    if (newReaction.user_id === currentUser) {
+                      updatedReactions.userReactions[newReaction.reaction_type] = true;
+                    }
+                    
+                    return { ...message, reactions: updatedReactions };
+                  }
+                  return message;
+                })
+              );
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'DELETE',
+              schema: 'public',
+              table: 'message_reactions'
+            },
+            (payload) => {
+              const deletedReaction = payload.old;
+              
+              setMessages(prevMessages => 
+                prevMessages.map(message => {
+                  if (message.id === deletedReaction.message_id && message.reactions) {
+                    const updatedReactions = { ...message.reactions };
+                    
+                    if (updatedReactions.counts[deletedReaction.reaction_type] > 0) {
+                      updatedReactions.counts[deletedReaction.reaction_type]--;
+                    }
+                    
+                    if (deletedReaction.user_id === currentUser) {
+                      updatedReactions.userReactions[deletedReaction.reaction_type] = false;
+                    }
+                    
+                    return { ...message, reactions: updatedReactions };
+                  }
+                  return message;
+                })
+              );
             }
           )
           .subscribe();
@@ -233,6 +373,46 @@ const GroupChat = () => {
       });
     } finally {
       setMessageToDelete(null);
+    }
+  };
+
+  const handleReaction = async (messageId: string, reactionType: string, isActive: boolean) => {
+    try {
+      if (isActive) {
+        console.log(`Removing ${reactionType} reaction for message ${messageId}`);
+        const { error } = await supabase
+          .from('message_reactions')
+          .delete()
+          .eq('message_id', messageId)
+          .eq('user_id', currentUser)
+          .eq('reaction_type', reactionType);
+          
+        if (error) {
+          console.error('Error removing reaction:', error);
+          throw error;
+        }
+      } else {
+        console.log(`Adding ${reactionType} reaction for message ${messageId}`);
+        const { error } = await supabase
+          .from('message_reactions')
+          .insert({
+            message_id: messageId,
+            user_id: currentUser,
+            reaction_type: reactionType
+          });
+          
+        if (error) {
+          console.error('Error adding reaction:', error);
+          throw error;
+        }
+      }
+    } catch (error: any) {
+      console.error('Error handling reaction:', error);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -403,6 +583,30 @@ const GroupChat = () => {
                       <div className="whitespace-pre-wrap">
                         {formatTextWithLinks(message.content)}
                       </div>
+                    )}
+                  </div>
+                  <div className="flex mt-1 gap-1">
+                    {message.reactions && message.user_id !== currentUser && (
+                      <>
+                        <MessageReaction 
+                          type="smile" 
+                          count={message.reactions.counts.smile} 
+                          active={message.reactions.userReactions.smile}
+                          onClick={() => handleReaction(message.id, "smile", message.reactions?.userReactions.smile || false)}
+                        />
+                        <MessageReaction 
+                          type="meh" 
+                          count={message.reactions.counts.meh} 
+                          active={message.reactions.userReactions.meh}
+                          onClick={() => handleReaction(message.id, "meh", message.reactions?.userReactions.meh || false)}
+                        />
+                        <MessageReaction 
+                          type="frown" 
+                          count={message.reactions.counts.frown} 
+                          active={message.reactions.userReactions.frown}
+                          onClick={() => handleReaction(message.id, "frown", message.reactions?.userReactions.frown || false)}
+                        />
+                      </>
                     )}
                   </div>
                   <p className={`text-xs mt-1 ${
