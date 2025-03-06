@@ -36,7 +36,7 @@ const Activity = () => {
       if (error) throw error;
       
       // Update local state to reflect all notifications are read
-      setNotifications(notifications.map(notification => ({
+      setNotifications(prevNotifications => prevNotifications.map(notification => ({
         ...notification,
         read: true
       })));
@@ -95,7 +95,7 @@ const Activity = () => {
     ? notifications 
     : notifications.filter(notification => notification.type === tab);
 
-  // Handle marking an item as read
+  // Handle marking an item as read and navigating
   const handleNotificationClick = async (notification: Notification) => {
     try {
       if (!notification.read) {
