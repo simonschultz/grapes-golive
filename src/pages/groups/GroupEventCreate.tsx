@@ -36,7 +36,6 @@ const GroupEventCreate = () => {
     location: "",
   });
 
-  // Generate time options in 15-minute intervals (00, 15, 30, 45)
   const generateTimeOptions = () => {
     const options = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -82,7 +81,6 @@ const GroupEventCreate = () => {
         return;
       }
 
-      // Get group ID from slug
       const { data: groupData, error: groupError } = await supabase
         .from('groups')
         .select('id')
@@ -93,13 +91,20 @@ const GroupEventCreate = () => {
         throw new Error('Group not found');
       }
 
-      // Format date as ISO string and extract just the date part
       const formattedStartDate = startDate.toISOString().split('T')[0];
       
-      // Use end date if provided, otherwise use start date
       const formattedEndDate = endDate ? endDate.toISOString().split('T')[0] : formattedStartDate;
 
-      // Create the event
+      console.log("Creating event with data:", {
+        title: formData.title,
+        description: formData.description,
+        date: formattedStartDate,
+        end_date: formattedEndDate,
+        time_start: formData.timeStart,
+        time_end: formData.timeEnd || null,
+        group_id: groupData.id,
+      });
+
       const { data: eventData, error: eventError } = await supabase
         .from('group_events')
         .insert([
@@ -119,10 +124,18 @@ const GroupEventCreate = () => {
         .select()
         .single();
 
-      if (eventError) throw eventError;
+      if (eventError) {
+        console.error("Error creating event:", eventError);
+        throw eventError;
+      }
 
-      // Create attendance record for creator
-      await supabase
+      if (!eventData) {
+        throw new Error("Failed to create event: No data returned");
+      }
+
+      console.log("Event created successfully:", eventData);
+
+      const { error: attendanceError } = await supabase
         .from('group_event_attendance')
         .insert([
           {
@@ -132,6 +145,10 @@ const GroupEventCreate = () => {
           }
         ]);
 
+      if (attendanceError) {
+        console.error("Error creating attendance record:", attendanceError);
+      }
+
       toast({
         title: "Success",
         description: "Event created successfully",
@@ -139,6 +156,7 @@ const GroupEventCreate = () => {
 
       navigate(`/groups/${slug}/calendar/${eventData.id}`);
     } catch (error: any) {
+      console.error("Error in event creation:", error);
       toast({
         title: "Error",
         description: error.message,
