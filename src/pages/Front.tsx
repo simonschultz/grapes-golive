@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Settings, Shield, MessageSquare, ArrowRight, UserPlus, Calendar, Users, BellRing } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -301,16 +300,16 @@ const Front = () => {
               )}
 
               {notifications.length > 0 && (
-                <div className="bg-[#D3E4FD] border border-blue-200 rounded-lg p-4">
+                <div className="bg-[#000080] border border-blue-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-[#000080]" />
-                      <h2 className="font-medium text-gray-900">Recent Activity</h2>
+                      <Shield className="h-5 w-5 text-white" />
+                      <h2 className="font-medium text-white">Recent Activity</h2>
                     </div>
                     {notificationCount > 3 && (
                       <Button 
                         variant="ghost" 
-                        className="text-sm text-[#000080] hover:text-blue-700 flex items-center gap-1"
+                        className="text-sm text-white hover:text-white/90 flex items-center gap-1"
                         onClick={() => navigate('/activity')}
                       >
                         See all
@@ -329,7 +328,7 @@ const Front = () => {
                           {getNotificationIcon(notification.type)}
                         </div>
                         <div>
-                          <p className="text-sm text-gray-900">{notification.message}</p>
+                          <p className="text-sm text-white">{notification.message}</p>
                           <p className="text-xs text-gray-500 mt-1">
                             {format(new Date(notification.created_at), 'MMM d, h:mm a')}
                           </p>
