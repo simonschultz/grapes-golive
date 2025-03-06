@@ -15,34 +15,30 @@ export const formatTextWithLinks = (text: string): React.ReactNode => {
   // If no URLs found, return the original text
   if (!text.match(urlRegex)) return text;
   
-  // Split the text by URLs
   const parts = text.split(urlRegex);
-  
-  // Match all URLs in the text
   const matches = text.match(urlRegex) || [];
-  
-  // Combine parts and URLs into a single array of React elements
   const result: React.ReactNode[] = [];
   
-  parts.forEach((part, i) => {
-    // Add the text part
-    if (part) {
-      result.push(part);
+  // Build the array of text and links
+  for (let i = 0; i < parts.length; i++) {
+    // Add text part if it exists
+    if (parts[i]) {
+      result.push(parts[i]);
     }
     
-    // Add the URL part if it exists
-    if (matches[i]) {
+    // Add link part if it exists
+    if (i < matches.length) {
       result.push(
         React.createElement('a', {
           key: `link-${i}`,
           href: matches[i],
           target: "_blank",
           rel: "noopener noreferrer",
-          className: "underline break-all" // Removed the blue color class
+          className: "underline break-all"
         }, matches[i])
       );
     }
-  });
+  }
   
   return result;
 };
