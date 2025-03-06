@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ const GroupEventCreate = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    link: "",
+    link: "", // We'll keep the field in the form but not submit it to the database
     timeStart: "",
     timeEnd: "",
     location: "",
@@ -105,13 +106,13 @@ const GroupEventCreate = () => {
         group_id: groupData.id,
       });
 
+      // Important: Removed the 'link' field from the insert operation
       const { data: eventData, error: eventError } = await supabase
         .from('group_events')
         .insert([
           {
             title: formData.title,
             description: formData.description,
-            link: formData.link || null,
             date: formattedStartDate,
             end_date: formattedEndDate,
             time_start: formData.timeStart,
