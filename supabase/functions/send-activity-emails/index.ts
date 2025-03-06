@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0"
 import { Resend } from "npm:resend@2.0.0"
@@ -25,7 +24,12 @@ interface NotificationWithGroup {
   }
 }
 
-serve(async () => {
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
+  }
+  
   try {
     // Get email notification frequency from admin settings
     const { data: frequencySettings } = await supabase
@@ -52,8 +56,18 @@ serve(async () => {
       })
     }
 
+    // Keep track of which users we've sent emails to in this run
+    // This prevents duplicate emails if the function is triggered multiple times
+    const processedEmails = new Set()
     let emailsSent = 0
+
     for (const user of users) {
+      // Skip if we've already sent an email to this user in this execution
+      if (processedEmails.has(user.email)) {
+        console.log(`Skipping duplicate email to ${user.email}`)
+        continue
+      }
+
       // Get user's last visit
       const { data: lastVisit } = await supabase
         .from('user_last_visits')
@@ -103,8 +117,11 @@ serve(async () => {
           html,
         })
 
+        // Mark this email as processed
+        processedEmails.add(user.email)
+        
         emailsSent++
-        console.log(`Sent digest email to ${user.email}`)
+        console.log(`Sent digest email to ${user.email} with ${notifications.length} notifications`)
       }
     }
 

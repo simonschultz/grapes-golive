@@ -219,7 +219,7 @@ const Front = () => {
               <img 
                 src="/lovable-uploads/c8d510f1-af2f-4971-a8ae-ce69e945c096.png" 
                 alt="Grapes Logo" 
-                className="h-5 w-5 mr-2"
+                className="h-7 w-7 mr-2"
               />
               <h1 className="text-xl font-semibold">Grapes</h1>
             </div>
@@ -301,16 +301,16 @@ const Front = () => {
               )}
 
               {notifications.length > 0 && (
-                <div className="bg-white border rounded-lg p-4">
+                <div className="bg-[#D3E4FD] border border-blue-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-gray-600" />
+                      <Shield className="h-5 w-5 text-[#000080]" />
                       <h2 className="font-medium text-gray-900">Recent Activity</h2>
                     </div>
                     {notificationCount > 3 && (
                       <Button 
                         variant="ghost" 
-                        className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        className="text-sm text-[#000080] hover:text-blue-700 flex items-center gap-1"
                         onClick={() => navigate('/activity')}
                       >
                         See all
@@ -323,7 +323,7 @@ const Front = () => {
                       <div
                         key={notification.id}
                         onClick={() => navigate(`/groups/${notification.groups.slug}`)}
-                        className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                        className="flex items-start gap-3 p-3 bg-white hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
                       >
                         <div className="flex-shrink-0 mt-1">
                           {getNotificationIcon(notification.type)}
