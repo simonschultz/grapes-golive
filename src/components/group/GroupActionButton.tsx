@@ -33,7 +33,7 @@ export const GroupActionButton = ({ group, userRole, showInline = false }: Group
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate('/auth');
+        navigate('/');
         return;
       }
 
@@ -65,7 +65,7 @@ export const GroupActionButton = ({ group, userRole, showInline = false }: Group
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate('/auth');
+        navigate('/');
         return;
       }
 
@@ -179,7 +179,7 @@ export const GroupActionButton = ({ group, userRole, showInline = false }: Group
               </div>
               <Button
                 onClick={handleCopyLink}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-[#000080] hover:bg-[#000060]"
               >
                 <Link className="h-4 w-4" />
                 Copy link
@@ -196,7 +196,7 @@ export const GroupActionButton = ({ group, userRole, showInline = false }: Group
       <button
         onClick={handleJoinGroup}
         className={cn(
-          "bg-blue-600 hover:bg-blue-700 text-white",
+          "bg-[#000080] hover:bg-[#000060] text-white",
           "px-4 py-2 rounded-md shadow-lg",
           "font-medium text-sm transition-colors"
         )}
