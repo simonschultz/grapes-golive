@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Clock, Home, MessageSquare, Users, Settings } from "lucide-react";
+import { Calendar, Clock, Home, MessageSquare, Users, Settings, Link } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -22,6 +22,7 @@ const GroupEventCreate = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    link: "",
     timeStart: "",
     timeEnd: "",
     location: "",
@@ -67,6 +68,7 @@ const GroupEventCreate = () => {
           {
             title: formData.title,
             description: formData.description,
+            link: formData.link || null,
             date: formattedDate,
             time_start: formData.timeStart,
             time_end: formData.timeEnd || null,
@@ -172,7 +174,7 @@ const GroupEventCreate = () => {
               required
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="Enter event title"
+              placeholder="Name your event"
             />
           </div>
 
@@ -183,9 +185,24 @@ const GroupEventCreate = () => {
               rows={3}
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Add event description"
+              placeholder="Describe your event"
               className="text-base md:text-sm"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="link">Link (optional)</Label>
+            <div className="relative">
+              <Link className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+              <Input
+                id="link"
+                type="url"
+                className="pl-10"
+                value={formData.link}
+                onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
+                placeholder="Add a relevant link"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
