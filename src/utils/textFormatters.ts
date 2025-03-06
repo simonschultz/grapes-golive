@@ -10,7 +10,10 @@ export const formatTextWithLinks = (text: string): React.ReactNode => {
   if (!text) return text;
   
   // Regular expression to match URLs starting with https://
-  const urlRegex = /(https:\/\/[^\s]+)/g;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  
+  // If no URLs found, return the original text
+  if (!text.match(urlRegex)) return text;
   
   // Split the text by URLs
   const parts = text.split(urlRegex);
@@ -18,16 +21,13 @@ export const formatTextWithLinks = (text: string): React.ReactNode => {
   // Match all URLs in the text
   const matches = text.match(urlRegex) || [];
   
-  // If no URLs found, return the original text
-  if (matches.length === 0) return text;
-  
   // Combine parts and URLs into a single array of React elements
   const result: React.ReactNode[] = [];
   
   parts.forEach((part, i) => {
     // Add the text part
     if (part) {
-      result.push(<span key={`text-${i}`}>{part}</span>);
+      result.push(part);
     }
     
     // Add the URL part if it exists
