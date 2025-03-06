@@ -99,8 +99,10 @@ export type Database = {
           created_by: string
           date: string
           description: string | null
+          end_date: string | null
           group_id: string
           id: string
+          link: string | null
           location: string | null
           time_end: string | null
           time_start: string
@@ -111,8 +113,10 @@ export type Database = {
           created_by: string
           date: string
           description?: string | null
+          end_date?: string | null
           group_id: string
           id?: string
+          link?: string | null
           location?: string | null
           time_end?: string | null
           time_start: string
@@ -123,8 +127,10 @@ export type Database = {
           created_by?: string
           date?: string
           description?: string | null
+          end_date?: string | null
           group_id?: string
           id?: string
+          link?: string | null
           location?: string | null
           time_end?: string | null
           time_start?: string

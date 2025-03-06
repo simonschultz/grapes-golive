@@ -5,38 +5,74 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Clock, Home, MessageSquare, Users, Settings } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Home, MessageSquare, Users, Settings, Link, PlusCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const GroupEventCreate = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [date, setDate] = useState<Date>();
+  const [startDate, setStartDate] = useState<Date>();
+  const [showEndDateTime, setShowEndDateTime] = useState(false);
+  const [endDate, setEndDate] = useState<Date>();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    link: "",
     timeStart: "",
     timeEnd: "",
     location: "",
   });
 
+  const generateTimeOptions = () => {
+    const options = [];
+    for (let hour = 0; hour < 24; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        const formattedHour = hour.toString().padStart(2, '0');
+        const formattedMinute = minute.toString().padStart(2, '0');
+        const timeValue = `${formattedHour}:${formattedMinute}`;
+        const displayValue = `${formattedHour}:${formattedMinute}`;
+        options.push({ value: timeValue, label: displayValue });
+      }
+    }
+    return options;
+  };
+
+  const timeOptions = generateTimeOptions();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date) {
+    if (!startDate) {
       toast({
         title: "Error",
-        description: "Please select a date for the event",
+        description: "Please select a start date for the event",
         variant: "destructive",
       });
       return;
     }
+    
+    if (!formData.timeStart) {
+      toast({
+        title: "Error",
+        description: "Please select a start time for the event",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -46,7 +82,6 @@ const GroupEventCreate = () => {
         return;
       }
 
-      // Get group ID from slug
       const { data: groupData, error: groupError } = await supabase
         .from('groups')
         .select('id')
@@ -57,20 +92,34 @@ const GroupEventCreate = () => {
         throw new Error('Group not found');
       }
 
-      // Format date as ISO string and extract just the date part
-      const formattedDate = date.toISOString().split('T')[0];
+      const formattedStartDate = startDate.toISOString().split('T')[0];
+      
+      const formattedEndDate = endDate ? endDate.toISOString().split('T')[0] : formattedStartDate;
 
-      // Create the event
+      console.log("Creating event with data:", {
+        title: formData.title,
+        description: formData.description,
+        date: formattedStartDate,
+        end_date: formattedEndDate,
+        time_start: formData.timeStart,
+        time_end: formData.timeEnd || null,
+        group_id: groupData.id,
+        link: formData.link || null,
+      });
+
+      // Now including the link field in the insert operation
       const { data: eventData, error: eventError } = await supabase
         .from('group_events')
         .insert([
           {
             title: formData.title,
             description: formData.description,
-            date: formattedDate,
+            date: formattedStartDate,
+            end_date: formattedEndDate,
             time_start: formData.timeStart,
             time_end: formData.timeEnd || null,
             location: formData.location || null,
+            link: formData.link || null,
             group_id: groupData.id,
             created_by: user.id,
           }
@@ -78,10 +127,18 @@ const GroupEventCreate = () => {
         .select()
         .single();
 
-      if (eventError) throw eventError;
+      if (eventError) {
+        console.error("Error creating event:", eventError);
+        throw eventError;
+      }
 
-      // Create attendance record for creator
-      await supabase
+      if (!eventData) {
+        throw new Error("Failed to create event: No data returned");
+      }
+
+      console.log("Event created successfully:", eventData);
+
+      const { error: attendanceError } = await supabase
         .from('group_event_attendance')
         .insert([
           {
@@ -91,6 +148,10 @@ const GroupEventCreate = () => {
           }
         ]);
 
+      if (attendanceError) {
+        console.error("Error creating attendance record:", attendanceError);
+      }
+
       toast({
         title: "Success",
         description: "Event created successfully",
@@ -98,6 +159,7 @@ const GroupEventCreate = () => {
 
       navigate(`/groups/${slug}/calendar/${eventData.id}`);
     } catch (error: any) {
+      console.error("Error in event creation:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -148,7 +210,7 @@ const GroupEventCreate = () => {
               className="py-4 px-3"
               onClick={() => navigate(`/groups/${slug}/calendar`)}
             >
-              <Calendar className="h-5 w-5 mr-2" />
+              <CalendarIcon className="h-5 w-5 mr-2" />
               Calendar
             </Button>
             <Button 
@@ -172,7 +234,7 @@ const GroupEventCreate = () => {
               required
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="Enter event title"
+              placeholder="Name your event"
             />
           </div>
 
@@ -183,66 +245,125 @@ const GroupEventCreate = () => {
               rows={3}
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Add event description"
+              placeholder="Describe your event"
               className="text-base md:text-sm"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Date *</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : "Select date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <Label htmlFor="link">Link (optional)</Label>
+            <div className="relative">
+              <Link className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+              <Input
+                id="link"
+                type="url"
+                className="pl-10"
+                value={formData.link}
+                onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
+                placeholder="Add a relevant link"
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="timeStart">Start Time *</Label>
-              <div className="relative">
-                <Clock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                <Input
-                  id="timeStart"
-                  type="time"
-                  required
-                  className="pl-10"
-                  value={formData.timeStart}
-                  onChange={(e) => setFormData(prev => ({ ...prev, timeStart: e.target.value }))}
-                />
-              </div>
+          <div className="space-y-2">
+            <Label>Start date *</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "PPP") : "Select date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Select 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, timeStart: value }))} 
+                value={formData.timeStart}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Start time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {timeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="timeEnd">End Time</Label>
-              <div className="relative">
-                <Clock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                <Input
-                  id="timeEnd"
-                  type="time"
-                  className="pl-10"
-                  value={formData.timeEnd}
-                  onChange={(e) => setFormData(prev => ({ ...prev, timeEnd: e.target.value }))}
-                />
+            {!showEndDateTime && (
+              <Button
+                type="button"
+                variant="link"
+                className="text-sm text-[#000080] mt-2 p-0"
+                onClick={() => setShowEndDateTime(true)}
+              >
+                <PlusCircle className="h-3 w-3 mr-1" /> End date and time
+              </Button>
+            )}
+
+            {showEndDateTime && (
+              <div className="mt-4 space-y-2">
+                <Label>End date and time</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !endDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {endDate ? format(endDate, "PPP") : "Select end date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={endDate}
+                        onSelect={setEndDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  <Select 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, timeEnd: value }))} 
+                    value={formData.timeEnd}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="End time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="space-y-2">

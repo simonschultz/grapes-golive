@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload } from "lucide-react";
@@ -132,12 +133,20 @@ const CreateGroup = () => {
       <main className="flex-1 p-4">
         <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-6">
           <div className="flex flex-col items-center space-y-4">
-            <Avatar className="w-24 h-24">
-              <AvatarImage src={imageUrl ? supabase.storage.from('group-images').getPublicUrl(imageUrl).data.publicUrl : ""} />
-              <AvatarFallback className="bg-gray-100">
-                {title ? title[0]?.toUpperCase() : "G"}
-              </AvatarFallback>
-            </Avatar>
+            {/* Changed from Avatar to a square with rounded corners */}
+            <div className="w-24 h-24 rounded-lg overflow-hidden relative bg-gray-100 flex items-center justify-center border">
+              {imageUrl ? (
+                <img 
+                  src={supabase.storage.from('group-images').getPublicUrl(imageUrl).data.publicUrl} 
+                  alt="Group"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-3xl text-gray-400">
+                  {title ? title[0]?.toUpperCase() : "G"}
+                </span>
+              )}
+            </div>
             <div className="flex items-center">
               <Label
                 htmlFor="picture"
@@ -164,7 +173,7 @@ const CreateGroup = () => {
               value={title}
               onChange={handleTitleChange}
               required
-              placeholder="Enter group title"
+              placeholder="A great title for your group"
             />
           </div>
 
@@ -182,7 +191,7 @@ const CreateGroup = () => {
               />
             </div>
             <p className="text-sm text-gray-500">
-              This will be the URL of your group page
+              The link you will share with friends and like-minded.
             </p>
           </div>
 

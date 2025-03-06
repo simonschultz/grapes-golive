@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +35,6 @@ const Calendar = () => {
           return;
         }
         
-        // Get events created by the user
         const { data: createdEvents, error: createdError } = await supabase
           .from('group_events')
           .select(`
@@ -54,7 +52,6 @@ const Calendar = () => {
           
         if (createdError) throw createdError;
         
-        // Get events where user RSVPed yes or maybe
         const { data: rsvpEvents, error: rsvpError } = await supabase
           .from('group_event_attendance')
           .select(`
@@ -72,12 +69,13 @@ const Calendar = () => {
             )
           `)
           .eq('user_id', user.id)
-          .in('status', ['yes', 'maybe'])
-          .order('group_events.date', { ascending: true });
+          .in('status', ['yes', 'maybe']);
           
         if (rsvpError) throw rsvpError;
         
-        // Process created events
+        console.log("Created events:", createdEvents);
+        console.log("RSVP events:", rsvpEvents);
+        
         const formattedCreatedEvents = createdEvents.map(event => ({
           id: event.id,
           title: event.title,
@@ -89,9 +87,8 @@ const Calendar = () => {
           groupName: event.groups?.title || '',
         }));
         
-        // Process RSVP events
         const formattedRsvpEvents = rsvpEvents
-          .filter(item => item.group_events) // Filter out any null events
+          .filter(item => item.group_events) // Ensure the referenced event exists
           .map(item => ({
             id: item.group_events?.id || '',
             title: item.group_events?.title || '',
@@ -104,22 +101,18 @@ const Calendar = () => {
             status: item.status
           }));
         
-        // Combine and deduplicate events (avoiding duplicates if user created and RSVPed to the same event)
         const eventMap = new Map();
         
-        // Add created events to map
         formattedCreatedEvents.forEach(event => {
           eventMap.set(event.id, event);
         });
         
-        // Add RSVP events to map (will overwrite if same ID, which is fine)
         formattedRsvpEvents.forEach(event => {
           if (!eventMap.has(event.id)) {
             eventMap.set(event.id, event);
           }
         });
         
-        // Convert map to array and sort by date
         let combinedEvents = Array.from(eventMap.values());
         combinedEvents = combinedEvents.sort((a, b) => {
           const dateA = new Date(a.date + 'T' + a.time_start);
@@ -127,7 +120,17 @@ const Calendar = () => {
           return dateA.getTime() - dateB.getTime();
         });
         
-        setEvents(combinedEvents);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const upcomingEvents = combinedEvents.filter(event => {
+          const eventDate = new Date(event.date);
+          eventDate.setHours(0, 0, 0, 0);
+          return eventDate >= today;
+        });
+        
+        console.log("Final upcoming events:", upcomingEvents);
+        setEvents(upcomingEvents);
       } catch (error: any) {
         console.error('Error fetching events:', error);
         toast({
@@ -143,7 +146,6 @@ const Calendar = () => {
     fetchEvents();
   }, [navigate, toast]);
   
-  // Function to format event date for display
   const formatEventDate = (eventDate: string, timeStart: string) => {
     const today = new Date();
     const tomorrow = new Date(today);
@@ -169,7 +171,6 @@ const Calendar = () => {
         
         <main className="flex-1 p-4 md:p-6">
           <div className="max-w-5xl mx-auto">
-            {/* Events List */}
             <Card className="bg-white border rounded-lg shadow-sm">
               <CardHeader className="border-b pb-4 flex flex-row items-center">
                 <List className="h-5 w-5 text-[#000080] mr-2" />

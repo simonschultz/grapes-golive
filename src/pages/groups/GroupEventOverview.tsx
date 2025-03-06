@@ -1,21 +1,31 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, X, HelpCircle, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, Check, X, HelpCircle, Calendar, MapPin, Users, Link as LinkIcon, ThumbsUp, ThumbsDown, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { GroupHeader } from "@/components/group/GroupHeader";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface GroupEvent {
   id: string;
   title: string;
   description: string | null;
   location: string | null;
+  link: string | null;
   date: string;
+  end_date: string | null;
   time_start: string;
   time_end: string | null;
   group_id: string;
+}
+
+interface GroupData {
+  id: string;
+  title: string;
+  image_url: string | null;
 }
 
 interface Attendance {
@@ -24,6 +34,7 @@ interface Attendance {
   profiles: {
     first_name: string | null;
     last_name: string | null;
+    avatar_url: string | null;
   };
 }
 
@@ -32,6 +43,7 @@ const GroupEventOverview = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [event, setEvent] = useState<GroupEvent | null>(null);
+  const [group, setGroup] = useState<GroupData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [attendanceList, setAttendanceList] = useState<Attendance[]>([]);
   const [userAttendance, setUserAttendance] = useState<'yes' | 'no' | 'maybe' | null>(null);
@@ -61,7 +73,17 @@ const GroupEventOverview = () => {
 
         setEvent(eventData);
 
-        // Fetch attendance list
+        // Fetch group details including image
+        const { data: groupData, error: groupError } = await supabase
+          .from('groups')
+          .select('id, title, image_url')
+          .eq('id', eventData.group_id)
+          .maybeSingle();
+          
+        if (groupError) throw groupError;
+        setGroup(groupData);
+
+        // Fetch attendance list with profile images
         const { data: attendanceData, error: attendanceError } = await supabase
           .from('group_event_attendance')
           .select(`
@@ -69,7 +91,8 @@ const GroupEventOverview = () => {
             status,
             profiles (
               first_name,
-              last_name
+              last_name,
+              avatar_url
             )
           `)
           .eq('event_id', id);
@@ -151,7 +174,7 @@ const GroupEventOverview = () => {
         });
       }
 
-      // Refresh attendance list
+      // Refresh attendance list - make sure to include avatar_url in the select
       const { data: attendanceData } = await supabase
         .from('group_event_attendance')
         .select(`
@@ -159,7 +182,8 @@ const GroupEventOverview = () => {
           status,
           profiles (
             first_name,
-            last_name
+            last_name,
+            avatar_url
           )
         `)
         .eq('event_id', id);
@@ -185,10 +209,30 @@ const GroupEventOverview = () => {
     );
   }
 
-  if (!event) return null;
+  if (!event || !group) return null;
+
+  // Format date display - handle multi-day events
+  const formatEventDate = () => {
+    const startDate = new Date(event.date);
+    
+    if (event.end_date && event.end_date !== event.date) {
+      const endDate = new Date(event.end_date);
+      return `${format(startDate, 'EEEE, MMMM d, yyyy')} - ${format(endDate, 'EEEE, MMMM d, yyyy')}`;
+    }
+    
+    return format(startDate, 'EEEE, MMMM d, yyyy');
+  };
+
+  // Get initials for avatar fallback
+  const getInitials = (firstName: string | null, lastName: string | null) => {
+    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Add Group Header with image */}
+      <GroupHeader imageUrl={group.image_url} title={group.title} />
+
       <header className="bg-white border-b">
         <div className="max-w-3xl mx-auto">
           <div className="p-4">
@@ -210,7 +254,7 @@ const GroupEventOverview = () => {
           <div className="space-y-6">
             <div>
               <p className="text-lg font-medium">
-                {format(new Date(event.date), 'EEEE, MMMM d, yyyy')}
+                {formatEventDate()}
               </p>
               <p className="text-gray-600">
                 {format(new Date(`2000-01-01T${event.time_start}`), 'h:mm a')}
@@ -233,6 +277,23 @@ const GroupEventOverview = () => {
                 <div className="flex items-start text-gray-600">
                   <MapPin className="h-5 w-5 mr-2 text-gray-500" />
                   <span>{event.location}</span>
+                </div>
+              </div>
+            )}
+
+            {event.link && (
+              <div>
+                <h2 className="text-lg font-medium mb-2">Link</h2>
+                <div className="flex items-start text-gray-600">
+                  <LinkIcon className="h-5 w-5 mr-2 text-gray-500" />
+                  <a 
+                    href={event.link.startsWith('http') ? event.link : `https://${event.link}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[#000080] hover:underline"
+                  >
+                    {event.link}
+                  </a>
                 </div>
               </div>
             )}
@@ -270,26 +331,58 @@ const GroupEventOverview = () => {
               </div>
             </div>
 
-            <div className="border-t pt-6">
-              <h2 className="text-lg font-medium mb-4">Who's going?</h2>
-              <div className="space-y-4">
+            <div className="border-t pt-6 space-y-8">
+              {/* Removed the "Who's going?" header */}
+              <div className="space-y-8">
                 {['yes', 'maybe', 'no'].map((status) => {
                   const statusAttendees = attendanceList.filter(a => a.status === status);
                   if (statusAttendees.length === 0) return null;
 
                   return (
-                    <div key={status}>
-                      <h3 className="text-sm font-medium text-gray-500 mb-2">
-                        {status === 'yes' ? 'Going' : 
-                         status === 'maybe' ? 'Maybe' : 
-                         'Not going'} ({statusAttendees.length})
+                    <div key={status} className="animate-fade-in">
+                      <h3 className="text-xl font-bold mb-4 flex items-center text-[#000080]">
+                        {status === 'yes' ? (
+                          <>
+                            <ThumbsUp className="h-6 w-6 mr-2" />
+                            Going
+                          </>
+                        ) : status === 'maybe' ? (
+                          <>
+                            <User className="h-6 w-6 mr-2" />
+                            Maybe
+                          </>
+                        ) : (
+                          <>
+                            <ThumbsDown className="h-6 w-6 mr-2" />
+                            Not going
+                          </>
+                        )} ({statusAttendees.length})
                       </h3>
-                      <div className="space-y-2">
-                        {statusAttendees.map((attendance) => (
-                          <div key={attendance.user_id} className="text-sm">
-                            {attendance.profiles.first_name} {attendance.profiles.last_name}
-                          </div>
-                        ))}
+                      
+                      <div className={`${status === 'no' ? 'opacity-60' : ''}`}>
+                        <div className="flex flex-wrap gap-4">
+                          {statusAttendees.map((attendance) => (
+                            <div key={attendance.user_id} className="flex flex-col items-center">
+                              <Avatar className="w-12 h-12 mb-1">
+                                {attendance.profiles.avatar_url ? (
+                                  <AvatarImage 
+                                    src={`${attendance.profiles.avatar_url}`} 
+                                    alt={`${attendance.profiles.first_name} ${attendance.profiles.last_name}`} 
+                                  />
+                                ) : (
+                                  <AvatarFallback className="bg-[#000080] text-white">
+                                    {getInitials(attendance.profiles.first_name, attendance.profiles.last_name) || (
+                                      <Users className="h-6 w-6" />
+                                    )}
+                                  </AvatarFallback>
+                                )}
+                              </Avatar>
+                              <span className="text-sm font-medium text-center">
+                                {attendance.profiles.first_name} {attendance.profiles.last_name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   );
