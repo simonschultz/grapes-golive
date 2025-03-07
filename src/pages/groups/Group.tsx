@@ -86,14 +86,6 @@ const Group = () => {
           } else {
             setIsMember(false);
           }
-        } else {
-          // If not authenticated, check if path is trying to access a sub-page
-          const pathParts = window.location.pathname.split('/');
-          if (pathParts.length > 3) {
-            // Redirect to the group landing page
-            navigate(`/groups/${slug}`);
-            return;
-          }
         }
       } catch (error) {
         console.error('Error:', error);
@@ -108,7 +100,7 @@ const Group = () => {
 
   const handleGroupAction = async () => {
     if (!isAuthenticated) {
-      navigate('/'); // Redirect to index instead of /auth
+      navigate('/auth');
       return;
     }
 

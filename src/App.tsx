@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -170,10 +171,7 @@ const GroupRouteGuard = ({ children }: { children: React.ReactNode }) => {
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
   }
 
-  if (pathname === `/groups/${slug}`) {
-    return <>{children}</>;
-  }
-
+  // For any group page URL (except base), check authentication and membership
   if (!authenticated) {
     return <Navigate to={`/groups/${slug}`} replace />;
   }
