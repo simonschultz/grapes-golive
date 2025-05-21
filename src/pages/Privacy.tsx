@@ -1,10 +1,7 @@
-
 import { ChevronLeft, Lock, Shield, Users, Info, Mail, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-
 const Privacy = () => {
-  return (
-    <div className="min-h-screen bg-[#FFDEE2] p-6">
+  return <div className="min-h-screen bg-[#FFDEE2] p-6">
       <Link to="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-8">
         <ChevronLeft className="h-4 w-4 mr-1" />
         Back to frontpage
@@ -15,7 +12,7 @@ const Privacy = () => {
           <Shield className="h-6 w-6 text-[#000080] mr-2" />
           <h1 className="text-3xl font-bold">Privacy Policy</h1>
         </div>
-        <p className="text-gray-600 mb-6">March 5th, 2025</p>
+        <p className="text-gray-600 mb-6">May 21st, 2025</p>
         
         <div className="space-y-6 text-gray-700">
           <section>
@@ -38,9 +35,7 @@ const Privacy = () => {
             <p className="mt-2">
               I will not share any of your personal information with any third parties.
             </p>
-            <p className="mt-2">
-              I am doing my best to be the good guy :-)
-            </p>
+            <p className="mt-2 font-bold">Please note! Data is stored on Supabase servers. Supabase is an American company. If you are worried about American companies being controlled by political stakeholders in the U.S. you should not use Grapes as a service. </p>
           </section>
 
           <section>
@@ -319,28 +314,16 @@ const Privacy = () => {
           </section>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
-const CalendarIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
+const CalendarIcon = ({
+  className
+}: {
+  className?: string;
+}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M8 2v4" />
     <path d="M16 2v4" />
     <rect width="18" height="18" x="3" y="4" rx="2" />
     <path d="M3 10h18" />
-  </svg>
-);
-
+  </svg>;
 export default Privacy;

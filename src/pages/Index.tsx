@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -180,7 +179,7 @@ const Index = () => {
                 <h3 className="text-xl font-semibold text-white">We care!</h3>
               </div>
               <p className="text-white/80">
-                We have built Grapes, because we care. About alternatives. About your data. And your own control.{" "}
+                We have built Grapes, because we care about alternatives.{" "}
                 <Link to="/about" className="text-white underline underline-offset-4 hover:text-white/80">
                   Read more
                 </Link>

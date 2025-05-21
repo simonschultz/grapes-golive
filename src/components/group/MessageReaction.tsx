@@ -38,7 +38,7 @@ const MessageReaction: React.FC<MessageReactionProps> = ({
         "inline-flex items-center gap-1 rounded-full py-1 px-2 text-xs transition-colors",
         active
           ? "bg-[#D3E4FD] text-[#000080]"
-          : "bg-[#F1F0FB] text-gray-500 hover:bg-[#E3E2F9]"
+          : "bg-[#F1F1F1] text-gray-500 hover:bg-[#E3E3E3]"
       )}
       onClick={handleClick}
       aria-pressed={active}

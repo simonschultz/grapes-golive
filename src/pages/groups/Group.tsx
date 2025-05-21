@@ -64,7 +64,7 @@ const Group = () => {
           setImageUrl(publicUrl);
         }
 
-        // If user is authenticated, check membership and request status
+        // If user is authenticated, check membership
         if (user) {
           const { data: memberData } = await supabase
             .from('group_members')
@@ -74,20 +74,25 @@ const Group = () => {
             .single();
 
           if (memberData) {
-            setIsMember(true);
-            navigate(`/groups/${slug}/front`);
+            if (memberData.role === 'member' || memberData.role === 'admin') {
+              setIsMember(true);
+              // Redirect member to the front page of the group
+              navigate(`/groups/${slug}/front`);
+              return;
+            } else if (memberData.role === 'request') {
+              setIsMember(false);
+              setHasRequestedAccess(true);
+            }
           } else {
             setIsMember(false);
-            // Check if user has a pending request
-            const { data: requestData } = await supabase
-              .from('group_members')
-              .select()
-              .eq('group_id', groupData.id)
-              .eq('user_id', user.id)
-              .eq('role', 'request')
-              .single();
-            
-            setHasRequestedAccess(!!requestData);
+          }
+        } else {
+          // If not authenticated, check if path is trying to access a sub-page
+          const pathParts = window.location.pathname.split('/');
+          if (pathParts.length > 3) {
+            // Redirect to the group landing page
+            navigate(`/groups/${slug}`);
+            return;
           }
         }
       } catch (error) {
@@ -103,7 +108,7 @@ const Group = () => {
 
   const handleGroupAction = async () => {
     if (!isAuthenticated) {
-      navigate('/'); // Changed from /auth to / (index)
+      navigate('/'); // Redirect to index instead of /auth
       return;
     }
 
@@ -207,7 +212,7 @@ const Group = () => {
             />
             <div className="p-3 sm:p-4 border-t">
               <Button
-                className="w-full"
+                className="w-full bg-[#000080] hover:bg-[#000060]"
                 onClick={handleGroupAction}
                 disabled={hasRequestedAccess}
               >
