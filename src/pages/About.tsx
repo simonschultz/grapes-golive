@@ -1,7 +1,9 @@
+
 import { ChevronLeft, Users, Globe, Calendar, UserCheck, MessageSquare, Grid } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { FeatureSection, FeatureItem } from "@/components/ui/feature-section";
+
 const About = () => {
   const keyFeatures: FeatureItem[] = [{
     icon: Users,
@@ -22,6 +24,7 @@ const About = () => {
     icon: Grid,
     title: "Overview across all groups"
   }];
+  
   return <div className="min-h-screen bg-[#FEF7CD] p-6">
       <Helmet>
         <title>About Grapes</title>
@@ -67,15 +70,27 @@ const About = () => {
             We do not share any of your data with others than explicitly mentioned Data Processors - like Supabase, which is the backbone and database hosting the data. All data is stored on servers in Frankfurt.
           </p>
           <p className="mt-2">
-            More details can be found in our <Link to="/privacy/" className="text-blue-600 hover:text-blue-800 underline">privacy policy</Link>.
+            More details can be found in our <Link to="/privacy/" className="text-[#000080] hover:text-[#000080]/80 underline">privacy policy</Link>.
+          </p>
+          
+          <h2 className="text-xl font-semibold mt-8">A sidenote on privacy and data (May 2025)</h2>
+          <p className="mt-2">
+            I built Grapes in February 2025 as an alternative to eg. Meta platforms. Grapes is a secure platform with a bunch of security measures applied through eg. Supabase, where all data is hosted.
+            While all data is hosted on Supabase's servers in Frankfurt (EU), Supabase is still an American company with branches in Singapore.
+          </p>
+          <p className="mt-2">
+            I originally accepted storing data in EU with a U.S. company. But seeing how things are evolving - and how American companies are puppeteered by political stakeholders - I am looking into alternatives on how and where to store data.
+          </p>
+          <p className="mt-2">
+            In the meantime - be aware of those structures and risks when using Grapes.
           </p>
 
           <div className="mt-12 pt-8 border-t border-gray-200">
             <h2 className="text-xl font-semibold mb-4">About Simon Schultz</h2>
             <p>
-              Grapes is the brainchild of <a href="https://simonschultz.dk" className="text-blue-600 hover:text-blue-800 underline">Simon Schultz</a>. To create an alternative to other (great) group services available in the market. 
+              Grapes is the brainchild of <a href="https://simonschultz.dk" className="text-[#000080] hover:text-[#000080]/80 underline">Simon Schultz</a>. To create an alternative to other (great) group services available in the market. 
               We have just launched (February 21st 2025). So still building and exploring how we can make things even better. 
-              If you have any questions, suggestions or comments, please write me on <span className="text-blue-600">hi@grapes.group</span>.
+              If you have any questions, suggestions or comments, please write me on <span className="text-[#000080]">hi@grapes.group</span>.
             </p>
             <p className="mt-4">
               <b>Simon Schultz</b><br />
@@ -86,4 +101,5 @@ const About = () => {
       </div>
     </div>;
 };
+
 export default About;
