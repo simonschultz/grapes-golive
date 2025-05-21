@@ -1,39 +1,28 @@
-
 import { ChevronLeft, Users, Globe, Calendar, UserCheck, MessageSquare, Grid } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { FeatureSection, FeatureItem } from "@/components/ui/feature-section";
-
 const About = () => {
-  const keyFeatures: FeatureItem[] = [
-    {
-      icon: Users,
-      title: "Create private and public groups",
-    },
-    {
-      icon: Globe,
-      title: "Explore public groups",
-    },
-    {
-      icon: Calendar,
-      title: "Organize group events",
-    },
-    {
-      icon: UserCheck,
-      title: "Manage event attendance",
-    },
-    {
-      icon: MessageSquare,
-      title: "Chat with other group members",
-    },
-    {
-      icon: Grid,
-      title: "Overview across all groups",
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-[#FEF7CD] p-6">
+  const keyFeatures: FeatureItem[] = [{
+    icon: Users,
+    title: "Create private and public groups"
+  }, {
+    icon: Globe,
+    title: "Explore public groups"
+  }, {
+    icon: Calendar,
+    title: "Organize group events"
+  }, {
+    icon: UserCheck,
+    title: "Manage event attendance"
+  }, {
+    icon: MessageSquare,
+    title: "Chat with other group members"
+  }, {
+    icon: Grid,
+    title: "Overview across all groups"
+  }];
+  return <div className="min-h-screen bg-[#FEF7CD] p-6">
       <Helmet>
         <title>About Grapes</title>
         <meta name="description" content="Learn more about Grapes, a platform designed to bring people together through shared interests and communities." />
@@ -52,18 +41,12 @@ const About = () => {
       </Link>
       
       <div className="max-w-2xl mx-auto">
-        <img 
-          src="/lovable-uploads/92881dd8-23b0-4094-b8b7-dc39c578a6c7.png" 
-          alt="Grapes logo" 
-          className="h-24 w-24 mb-6"
-        />
+        <img src="/lovable-uploads/92881dd8-23b0-4094-b8b7-dc39c578a6c7.png" alt="Grapes logo" className="h-24 w-24 mb-6" />
         
         <h1 className="text-3xl font-bold mb-6">About Grapes</h1>
         
         <div className="space-y-6 text-gray-700">
-          <p>
-            Grapes is a platform designed to bring people together through shared interests, activities, and communities. Whether you're organizing a book club, planning community events, or connecting with like-minded individuals, Grapes provides the tools you need to create and manage meaningful connections.
-          </p>
+          <p>Grapes is a platform designed to bring people together through shared interests, activities, and communities. Whether you're organizing a book club, planning community events, or connecting with like-minded individuals, Grapes provides the tools you need to create and manage meaningful connections.</p>
 
           <h2 className="text-xl font-semibold mt-8">Our Mission</h2>
           <p>
@@ -71,12 +54,7 @@ const About = () => {
           </p>
 
           <h2 className="text-xl font-semibold mt-8">Key Features</h2>
-          <FeatureSection 
-            items={keyFeatures} 
-            className="mt-4" 
-            columns={1}
-            variant="clean"
-          />
+          <FeatureSection items={keyFeatures} className="mt-4" columns={1} variant="clean" />
 
           <p className="mt-8">
             Founded with the vision of making group organization simple and accessible, we continue to develop features that help communities thrive.
@@ -106,8 +84,6 @@ const About = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default About;
